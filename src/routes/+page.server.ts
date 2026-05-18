@@ -1,4 +1,4 @@
-import { fail } from '@sveltejs/kit';
+import { fail, type Actions } from '@sveltejs/kit';
 
 import * as database from '$lib/server/database';
 
@@ -25,8 +25,11 @@ export const actions = {
         else
             description = description.toString();
 
-        database.addArticle(title.toString(), url.toString(), description);
+        const result = database.addArticle(title.toString(), url.toString(), description);
 
-        return { success: true };
+        if (!result.success)
+            return fail(500);
+
+        return result;
     }
-}
+} satisfies Actions

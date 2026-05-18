@@ -25,6 +25,7 @@
 	"dependencies": {
 		"@blackglory/better-sqlite3-migrations": "^0.2.2",
 		"better-sqlite3": "^12.9.0",
+		"maplibre-gl": "^5.24.0",
 		"migration-files": "^0.4.3"
 	}
 }
