@@ -1,15 +1,17 @@
 <script lang="ts">
-    import { onMount, onDestroy } from "svelte";
+    import { onDestroy, onMount } from "svelte";
 
     import maplibregl from "maplibre-gl";
     import "maplibre-gl/dist/maplibre-gl.css";
 
     import { syncMaps } from "./utils.ts";
 
-    import mapStyle from "./osm_surface.json";
     import mapBuildings from "./osm_buildings.json";
+    import mapStyle from "./osm_surface.json";
 
-    import { MapRaseriser } from "./glyphRenderer.ts";
+    import { GLYPH_FUNCTIONS, MapRaseriser } from "./glyphRenderer.ts";
+    import { glyphState } from "./glyphState.svelte.ts";
+    import { colourToString } from "./utils.ts";
 
     let mapContainer: HTMLDivElement;
     let mapBuildingsContainer: HTMLDivElement;
@@ -50,6 +52,7 @@
     }: Props = $props();
 
     let debugGlyphSize = $state(glyphSize);
+    let debugShow = $state(true);
 
     let datacenterMarkers: maplibregl.Marker[] = [];
 
@@ -104,46 +107,6 @@
             glyphSize,
         );
 
-        rasteriser.rasterPalette.addItem(
-            "circle_small",
-            "water",
-            [255, 255, 255],
-            undefined,
-            "#00F",
-        );
-
-        rasteriser.rasterPalette.addItem(
-            "slash",
-            "grass",
-            [255, 0, 255],
-            undefined,
-            "#ff70b3",
-        );
-
-        rasteriser.rasterPalette.addItem(
-            "blank",
-            "land",
-            [0, 0, 255],
-            undefined,
-            "#ff70b3",
-        );
-
-        rasteriser.rasterPalette.addItem(
-            "wedge",
-            "wood",
-            [0, 255, 255],
-            undefined,
-            "#ff70b3",
-        );
-
-        rasteriser.rasterPalette.addItem(
-            "blank",
-            "residential",
-            [0, 255, 0],
-            undefined,
-            "#0F0",
-        );
-
         map.addControl(new maplibregl.NavigationControl());
 
         map.on("render", () => {
@@ -195,10 +158,10 @@
                     datacenterMarkers.push(marker);
                 });
 
-                map.flyTo({
-                    zoom: 14,
-                    center: geoJSON.data.features[0].geometry.coordinates,
-                });
+                // map.flyTo({
+                //     zoom: 14,
+                //     center: geoJSON.data.features[0].geometry.coordinates,
+                // });
             }
 
             new ResizeObserver(() =>
@@ -218,13 +181,69 @@
 <!-- <canvas class="map-overlay" id="line-layer"></canvas> -->
 
 <div id="debug-view">
-    <div class="horizontal">
+    <button onclick={() => (debugShow = !debugShow)}>
+        {debugShow ? "Hide" : "Show"}
+    </button>
+    <div
+        class="horizontal"
+        style="overflow: hidden; height: {debugShow ? null : 0};"
+    >
         <canvas
             bind:this={offscreenCanvas}
             class="debug-canvas"
             id="debug-canvas"
         ></canvas>
         <canvas bind:this={glyphPaletteCanvas} id="debug-glyphs"></canvas>
+
+        <table>
+            <tbody>
+                {#each glyphState as gs}
+                    <tr>
+                        <td style="text-align: right;">{gs.label}</td>
+                        <td
+                            style="width: 1em; border: 1px solid black; background: {colourToString(
+                                gs.rgb,
+                            )}"
+                        ></td>
+                        <td>
+                            <select
+                                bind:value={gs.glyphName}
+                                onchange={() => {
+                                    rasteriser.refresh();
+                                }}
+                            >
+                                {#each GLYPH_FUNCTIONS as gf}
+                                    <option
+                                        value={gf.name}
+                                        selected={gf.name == gs.glyphName}
+                                    >
+                                        {gf.name}
+                                    </option>
+                                {/each}
+                            </select>
+                        </td>
+                        <td>
+                            <input
+                                type="color"
+                                onchange={() => {
+                                    rasteriser.refresh();
+                                }}
+                                bind:value={gs.bg}
+                            />
+                        </td>
+                        <td>
+                            <input
+                                type="color"
+                                onchange={() => {
+                                    rasteriser.refresh();
+                                }}
+                                bind:value={gs.fg}
+                            />
+                        </td>
+                    </tr>
+                {/each}
+            </tbody>
+        </table>
     </div>
     <label>
         <input

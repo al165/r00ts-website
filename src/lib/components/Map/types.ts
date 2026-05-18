@@ -16,3 +16,12 @@ export type PaletteItem = {
     bg?: Colour | string,
     canvas: OffscreenCanvas | null,
 };
+
+export type GlyphParams = {
+    glyphName: string;
+    label: string;
+    rgb: Colour;
+    bg?: string | Colour;
+    fg?: string | Colour;
+    canvas?: OffscreenCanvas | null;
+};

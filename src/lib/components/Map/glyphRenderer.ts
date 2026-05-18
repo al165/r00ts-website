@@ -1,4 +1,5 @@
-import type { Colour, GlyphDrawFn, PaletteItem } from './types.ts';
+import { glyphState } from './glyphState.svelte.ts';
+import type { Colour, GlyphDrawFn, GlyphParams } from './types.ts';
 import { colourToString } from './utils.ts';
 
 const DEFAULT_FG = 'black';
@@ -140,7 +141,7 @@ function createGlyph(size: number, drawFn: GlyphDrawFn, fg?: Colour | string, bg
 
 export class RasteriserPalette {
     private glyphFunctions: { [key: string]: GlyphDrawFn } = {};
-    public palette: PaletteItem[] = [];
+    public palette: GlyphParams[] = glyphState;
 
     private glyphPaletteCanvas: HTMLCanvasElement | OffscreenCanvas;
     private glyphPaletteCtx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
@@ -163,17 +164,20 @@ export class RasteriserPalette {
         // Some default glyphs
         for (const glyphFn of GLYPH_FUNCTIONS)
             this.addGlyph(glyphFn.name, glyphFn.fn)
-    }
 
-    addItem(glyphName: string, label: string, rgb: Colour, bg?: Colour | string, fg?: Colour | string) {
-        if (this.glyphFunctions[glyphName] === undefined)
-            return;
-
-        const canvas = createGlyph(this.glyphSize, this.glyphFunctions[glyphName], fg, bg);
-        this.palette.push({ name: glyphName, label, rgb, fg, bg, canvas });
-
+        this.setGlyphSize(this.glyphSize);
         this.renderGlyphPalette();
     }
+
+    // addItem(glyphName: string, label: string, rgb: Colour, bg?: Colour | string, fg?: Colour | string) {
+    //     // if (this.glyphFunctions[glyphName] === undefined)
+    //     //     return;
+    //     //
+    //     // const canvas = createGlyph(this.glyphSize, this.glyphFunctions[glyphName], fg, bg);
+    //     // this.palette.push({ name: glyphName, label, rgb, fg, bg, canvas });
+    //     //
+    //     // this.renderGlyphPalette();
+    // }
 
     addGlyph(glyphName: string, drawFn: GlyphDrawFn) {
         this.glyphFunctions[glyphName] = drawFn;
@@ -194,19 +198,19 @@ export class RasteriserPalette {
             }
         }
 
-        return best.canvas;
+        if (best.canvas)
+            return best.canvas;
+
+        return null;
     }
 
     setGlyphSize(newSize: number) {
-        if (newSize == this.glyphSize)
-            return;
-
         this.glyphSize = newSize;
 
         // Re-render the glyph palette
         for (const entry of this.palette) {
-            const { name, fg, bg } = entry;
-            entry.canvas = createGlyph(this.glyphSize, this.glyphFunctions[name], fg, bg);
+            const { glyphName, fg, bg } = entry;
+            entry.canvas = createGlyph(this.glyphSize, this.glyphFunctions[glyphName], fg, bg);
         }
 
         this.renderGlyphPalette();
@@ -331,6 +335,7 @@ export class MapRaseriser {
     }
 
     refresh() {
+        this.rasterPalette.setGlyphSize(this.glyphSize);
         this.rasterPalette.renderGlyphPalette();
         this.renderGlyphs();
     }

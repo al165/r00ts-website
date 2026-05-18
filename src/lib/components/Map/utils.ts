@@ -1,7 +1,9 @@
 import type { Map } from "maplibre-gl";
 import type { Colour } from "./types";
 
-export function colourToString(c: Colour): string {
+export function colourToString(c: Colour | string): string {
+    if (typeof c === "string")
+        return c
     return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
 }
 
