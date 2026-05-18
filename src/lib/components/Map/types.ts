@@ -1,3 +1,23 @@
+export interface Props {
+    zoom?: number;
+    center?: [number, number];
+    geoJSON?: any;
+    glyphSize?: number;
+}
+
+export interface DatacenterInfo {
+    type: string;
+    properties: {
+        description: string;
+        url: string;
+    };
+    geometry: {
+        type: string;
+        coordinates: [number, number];
+    };
+    marker?: maplibregl.Marker;
+}
+
 export type Colour = [number, number, number];
 
 export type GlyphDrawFn = {

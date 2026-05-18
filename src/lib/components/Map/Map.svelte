@@ -11,6 +11,7 @@
 
     import { GLYPH_FUNCTIONS, MapRaseriser } from "./glyphRenderer.ts";
     import { glyphState } from "./glyphState.svelte.ts";
+    import type { DatacenterInfo, Props } from "./types.ts";
     import { colourToString } from "./utils.ts";
 
     let mapContainer: HTMLDivElement;
@@ -23,26 +24,6 @@
     // For debug view
     let offscreenCanvas: HTMLCanvasElement;
     let glyphPaletteCanvas: HTMLCanvasElement;
-
-    interface Props {
-        zoom?: number;
-        center?: [number, number];
-        geoJSON?: any;
-        glyphSize?: number;
-    }
-
-    interface DatacenterInfo {
-        type: string;
-        properties: {
-            description: string;
-            url: string;
-        };
-        geometry: {
-            type: string;
-            coordinates: [number, number];
-        };
-        marker?: maplibregl.Marker;
-    }
 
     let {
         zoom = 2,
@@ -177,8 +158,6 @@
 <div bind:this={mapContainer} class="map-container"></div>
 <canvas bind:this={glyphOverlayCanvas} class="map-overlay" id="glyph-render">
 </canvas>
-
-<!-- <canvas class="map-overlay" id="line-layer"></canvas> -->
 
 <div id="debug-view">
     <button onclick={() => (debugShow = !debugShow)}>
