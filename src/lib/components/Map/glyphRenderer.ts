@@ -280,11 +280,12 @@ export class MapRaseriser {
     }
 
     resize(width?: number, height?: number) {
+        const dpr = window.devicePixelRatio || 1;
         if (width != undefined)
-            this.glyphOverlayCanvas.width = width;
+            this.glyphOverlayCanvas.width = width / dpr;
 
         if (height != undefined)
-            this.glyphOverlayCanvas.height = height;
+            this.glyphOverlayCanvas.height = height / dpr;
 
         this.cols = Math.floor(this.glyphOverlayCanvas.width / this.glyphSize);
         this.rows = Math.floor(this.glyphOverlayCanvas.height / this.glyphSize);
