@@ -1,9 +1,13 @@
 # r00ts Website
 
+> [!IMPORTANT]
+> Still under construction!
+
 Front and back-end to r00ts website and database.
 Companion site to [r00ts-extension](https://github.com/al165/r00ts-extension).
 
-Developed by [Arran Lyon](https://arranlyon.com) and [AIxDESIGN](https://aixdesign.co).
+Developed by [Arran Lyon](https://arranlyon.com), [Andrea Albiac](https://andreaalbiac.com/)
+and [AIxDESIGN](https://aixdesign.co).
 With support from [Stimulerings Fonds](https://www.stimuleringsfonds.nl/).
 
 [![MapLibre](https://img.shields.io/badge/MapLibre-396CB2?logo=MapLibre)](https://maplibre.org/)
