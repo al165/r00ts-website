@@ -30,7 +30,6 @@ CREATE TABLE Networks (
 CREATE TABLE Datacenters (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     fac_id INTEGER UNIQUE,
-    identified INTEGER NOT NULL DEFAULT 0,
     name TEXT,
     lat NUMBER,
     lon NUMBER,

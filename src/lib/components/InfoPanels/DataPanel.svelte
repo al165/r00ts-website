@@ -57,7 +57,19 @@
 
 <div class="wrapper" class:hidden={markerState.activeId == null}>
     <div class="panel">
-        <h1>Selected Datacenter</h1>
+        {#if markerState.properties.links?.length}
+            <h1>
+                <a
+                    href={markerState.properties.links[0]}
+                    rel="noopener"
+                    target="_blank"
+                >
+                    {markerState.properties.name}
+                </a>
+            </h1>
+        {:else}
+            <h1>{markerState.properties.name}</h1>
+        {/if}
         <NoteList {notes} />
         {#key markerState.activeId}
             <AddNotePanel id={markerState.activeId} {newNoteAdded} />
@@ -66,6 +78,14 @@
 </div>
 
 <style>
+    a {
+        color: blue;
+    }
+
+    a:visited {
+        color: blue;
+    }
+
     .wrapper {
         transition: width 1s cubic-bezier(0.25, 0.1, 0.25, 1);
         position: absolute;

@@ -51,3 +51,9 @@ export interface PostResult {
     code: number,
     reason?: string
 };
+
+export type Weather = {
+    weatherCode: number,
+    temp: number,
+    timestamp: number
+};

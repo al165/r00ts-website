@@ -118,22 +118,6 @@
                 }
             });
 
-            if (geoJSON) {
-                geoJSON.data.features.forEach((ds: DatacenterInfo) => {
-                    const { url, id } = ds.properties;
-                    const { coordinates } = ds.geometry;
-
-                    datacenterMarkers.push(
-                        addMarker(map, {
-                            lat: coordinates[1],
-                            lng: coordinates[0],
-                            url,
-                            id,
-                        }),
-                    );
-                });
-            }
-
             new ResizeObserver(() =>
                 rasteriser?.resize(mapCanvas.width, mapCanvas.height),
             ).observe(mapCanvas);
@@ -144,6 +128,26 @@
         });
 
         rasteriser?.resize(mapCanvas.width, mapCanvas.height);
+
+        if (geoJSON) {
+            console.log(geoJSON);
+            geoJSON.data.features.forEach((ds: DatacenterInfo) => {
+                const { url, id, weather, name, links } = ds.properties;
+                const { coordinates } = ds.geometry;
+
+                datacenterMarkers.push(
+                    addMarker(map, {
+                        lat: coordinates[1],
+                        lng: coordinates[0],
+                        url,
+                        id,
+                        name,
+                        links,
+                        weather,
+                    }),
+                );
+            });
+        }
     });
 
     onDestroy(() => {

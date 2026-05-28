@@ -1,3 +1,5 @@
+import type { Weather } from "$lib/types";
+
 export interface Props {
     zoom?: number;
     center?: [number, number];
@@ -12,6 +14,9 @@ export interface DatacenterInfo {
         description: string;
         url: string;
         id: number;
+        weather?: Weather;
+        name: string;
+        links?: string[];
     };
     geometry: {
         type: string;

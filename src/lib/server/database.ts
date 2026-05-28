@@ -195,6 +195,17 @@ async function findDatacenters(net_id: number, country_code: string | null, leve
     return fac_info;
 }
 
+export async function getDatacenter(id: number) {
+    if (id < 0)
+        return { success: false, reason: 'ID is out of range' };
+
+    let datacenter = db.prepare('SELECT * FROM Datacenters WHERE id = ?').get([id]) as Datacenter;
+
+    if (!datacenter)
+        return { success: false, reason: `Data center not found with id ${id}` };
+
+    return { success: true, datacenter }
+}
 
 export async function getDatacenters(asn: string, country_code: string | null, level: number)
     : Promise<{ success: boolean, reason?: string, facilities?: Datacenter[] }> {

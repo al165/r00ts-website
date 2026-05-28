@@ -1,15 +1,18 @@
 <script lang="ts">
+    import type { Weather } from "$lib/types";
+
     let {
         url = "",
         zoom = 13,
         open = false,
+        weather = undefined,
         onclick,
     }: {
         id: number;
         url: string;
         zoom: number;
         open: boolean;
-        loading: boolean;
+        weather?: Weather;
         onclick: (e?: MouseEvent) => void;
     } = $props();
 
@@ -28,6 +31,11 @@
         onkeydown={(e) => e.key === "Enter" && onclick?.()}
     >
         <img class="aerial" src={url} alt="Aerial view" />
+        {#if weather && open}
+            <div class="weather">
+                {weather.temp}°C
+            </div>
+        {/if}
     </div>
 </div>
 
@@ -56,11 +64,23 @@
         background-size: cover;
         height: 100%;
         border: 0.8em solid white;
+        box-sizing: border-box;
     }
 
     .marker-small {
         width: 50px;
         height: 50px;
+    }
+
+    .weather {
+        position: absolute;
+        bottom: 100%;
+        right: 0;
+        padding: 0.4em 0.6em;
+        background-color: white;
+        font-family: sans-serif;
+        font-size: 10pt;
+        font-weight: 600;
     }
 
     :global(.datacenter-marker) {

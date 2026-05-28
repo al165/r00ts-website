@@ -2,11 +2,17 @@ import { mount } from "svelte";
 
 import maplibregl from "maplibre-gl";
 
-import type { NoteState } from "$lib/types";
+import type { NoteState, Weather } from "$lib/types";
 import Marker from "./Marker.svelte";
 
 
-export const markerState = $state({ activeId: null as number | null, lng: 0, lat: 0 });
+export const markerState = $state({
+    activeId: null as number | null, lng: 0, lat: 0, properties: {
+        name: '',
+        links: undefined as string[] | undefined,
+        weather: undefined as Weather | undefined
+    }
+});
 
 export function addMarker(
     map: maplibregl.Map,
@@ -14,12 +20,18 @@ export function addMarker(
         lng,
         lat,
         url,
-        id
+        id,
+        name,
+        weather,
+        links
     }: {
         lng: number;
         lat: number;
         url: string;
         id: number;
+        name: string;
+        links?: string[];
+        weather?: Weather;
     },
 ) {
     const zoomState = $state({ value: map.getZoom() });
@@ -35,6 +47,7 @@ export function addMarker(
         markerState.activeId = isOpening ? id : null;
         markerState.lng = lng;
         markerState.lat = lat;
+        markerState.properties = { name, links, weather };
     }
 
     const el = document.createElement("div");
@@ -50,6 +63,7 @@ export function addMarker(
             get loading() { return noteState.loading },
             url,
             id,
+            weather,
             onclick
         },
     });
