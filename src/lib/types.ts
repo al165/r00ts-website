@@ -30,13 +30,12 @@ export interface Network {
     end_int: number,
     ip_cidr: string,
     asn: number,
-    clues: string,
+    clues: string[],
 };
 
 export interface Datacenter {
     id: number,
     fac_id: number,
-    identified: boolean,
     name: string,
     lat: number,
     lon: number,

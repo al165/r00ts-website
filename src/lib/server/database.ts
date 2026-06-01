@@ -100,7 +100,7 @@ export async function getNetwork(ip: number | string) {
     if (ip_int == -1)
         return { success: false, reason: 'Invalid IP address' };
 
-    let net = db.prepare('SELECT * FROM Networks WHERE ? BETWEEN start_int AND end_int').get(ip_int);
+    let net: Network = db.prepare('SELECT * FROM Networks WHERE ? BETWEEN start_int AND end_int').get(ip_int) as Network;
 
     if (!net) {
         // Not in local database, fetch from NetworksDB
@@ -142,7 +142,7 @@ export async function getNetwork(ip: number | string) {
         }
 
         net = {
-            id,
+            id: id as number,
             organisation_name,
             network_name,
             description,
@@ -152,7 +152,7 @@ export async function getNetwork(ip: number | string) {
             end_int,
             ip_cidr: cidr,
             asn: as_number,
-            identified: 0,
+            clues: []
         }
     }
 
@@ -207,7 +207,7 @@ export async function getDatacenter(id: number) {
     return { success: true, datacenter }
 }
 
-export async function getDatacenters(asn: string, country_code: string | null, level: number)
+export async function getDatacenters(asn: number, country_code: string | null, level: number)
     : Promise<{ success: boolean, reason?: string, facilities?: Datacenter[] }> {
 
     if (!asn)
@@ -220,19 +220,18 @@ export async function getDatacenters(asn: string, country_code: string | null, l
 
     let facility_query_params: (string | number)[] = [asn];
     let facility_query = `
-        SELECT * FROM Datacenters
-        JOIN NetworksDatacenters ON Datacenters.id = NetworksDatacenters.datacenter_id
+        SELECT d.id, d.fac_id, d.name, d.lat, d.lon, d.city, d.country_code, d.links, d.last_update FROM Datacenters d
+        JOIN NetworksDatacenters ON d.id = NetworksDatacenters.datacenter_id
         JOIN Networks ON Networks.id = NetworksDatacenters.network_id
         WHERE Networks.asn = ?
     `;
 
     if (country_code) {
-        facility_query += ' AND Datacenters.country_code LIKE ?';
+        facility_query += ' AND d.country_code LIKE ?';
         facility_query_params.push(country_code);
     }
 
     const facilities = db.prepare(facility_query).all(facility_query_params) as Datacenter[];
-    console.log()
     console.log('number of facilities in database:', facilities.length);
 
     if (facilities && facilities.length > 0) {
@@ -302,5 +301,4 @@ export async function getDatacenters(asn: string, country_code: string | null, l
     }
 
     return { success: true, facilities: fac_info_details.data };
-
 }

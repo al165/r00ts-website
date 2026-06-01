@@ -18,7 +18,7 @@ export async function GET({ url }) {
 
     console.log(asn, country_code, level);
 
-    const result = await database.getDatacenters(asn, country_code, level);
+    const result = await database.getDatacenters(parseInt(asn), country_code, level);
 
     if (!result.success)
         error(400, result.reason);
