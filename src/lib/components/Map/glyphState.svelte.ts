@@ -4,14 +4,14 @@ export const glyphSize = $state({ value: 10 });
 
 export const glyphState: GlyphParams[] = $state.raw([
     {
-        glyphName: "circle_small",
+        glyphName: "line_h",
         label: "water",
         rgb: [255, 255, 255],
-        bg: "#FFF",
-        fg: "#00F",
+        bg: "#99c1f1",
+        fg: "#FFF",
     },
     {
-        glyphName: "slash",
+        glyphName: "cross",
         label: "grass",
         rgb: [255, 0, 255],
         bg: "#FFF",
@@ -37,6 +37,6 @@ export const glyphState: GlyphParams[] = $state.raw([
         label: "residential",
         rgb: [0, 255, 0],
         bg: "#FFF",
-        fg: "#0F0",
+        fg: "#ff70b3",
     }
 ]);

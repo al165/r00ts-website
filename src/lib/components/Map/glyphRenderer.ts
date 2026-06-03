@@ -99,7 +99,7 @@ export const GLYPH_FUNCTIONS: { name: string, fn: GlyphDrawFn }[] = [
             ctx.strokeStyle = colourToString(fg);
 
             const o = s * 0.1;
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(o, o);
             ctx.lineTo(s - 0, s - 0);
@@ -184,16 +184,6 @@ export class RasteriserPalette {
         this.setGlyphSize(this.glyphSize);
         this.renderGlyphPalette();
     }
-
-    // addItem(glyphName: string, label: string, rgb: Colour, bg?: Colour | string, fg?: Colour | string) {
-    //     // if (this.glyphFunctions[glyphName] === undefined)
-    //     //     return;
-    //     //
-    //     // const canvas = createGlyph(this.glyphSize, this.glyphFunctions[glyphName], fg, bg);
-    //     // this.palette.push({ name: glyphName, label, rgb, fg, bg, canvas });
-    //     //
-    //     // this.renderGlyphPalette();
-    // }
 
     addGlyph(glyphName: string, drawFn: GlyphDrawFn) {
         this.glyphFunctions[glyphName] = drawFn;
