@@ -2,52 +2,43 @@ import { mount } from "svelte";
 
 import maplibregl from "maplibre-gl";
 
-import type { NoteState, Weather } from "$lib/types";
+import type { Datacenter, Weather } from "$lib/types";
 import Marker from "./Marker.svelte";
 
 
 export const markerState = $state({
-    activeId: null as number | null, lng: 0, lat: 0, properties: {
-        name: '',
-        links: undefined as string[] | undefined,
-        weather: undefined as Weather | undefined
-    }
+    activeId: null as number | null,
+    datacenter: null as Datacenter | null
 });
 
 export function addMarker(
     map: maplibregl.Map,
     {
-        lng,
-        lat,
-        url,
-        id,
-        name,
+        datacenter,
         weather,
-        links
     }: {
-        lng: number;
-        lat: number;
-        url?: string;
-        id: number;
-        name: string;
-        links?: string[];
+        datacenter: Datacenter;
         weather?: Weather;
     },
 ) {
     const zoomState = $state({ value: map.getZoom() });
-    const noteState = $state<NoteState>({
-        data: null,
-        loading: false
-    });
 
     async function onclick(e?: MouseEvent) {
         e?.stopPropagation();
 
-        const isOpening = markerState.activeId != id;
-        markerState.activeId = isOpening ? id : null;
-        markerState.lng = lng;
-        markerState.lat = lat;
-        markerState.properties = { name, links, weather };
+        const isOpening = markerState.activeId != datacenter.id;
+        markerState.activeId = isOpening ? datacenter.id : null;
+        markerState.datacenter = datacenter;
+
+        if (datacenter.filename == null && datacenter.precise) {
+            fetch(`/api/aerial/${datacenter.id}`)
+                .then(res => res.json())
+                .then(data => {
+                    datacenter.filename = data.filename;
+                }).catch(err => {
+                    console.error(err);
+                })
+        }
     }
 
     const el = document.createElement("div");
@@ -58,12 +49,9 @@ export function addMarker(
                 return zoomState.value;
             },
             get open() {
-                return markerState.activeId === id;
+                return markerState.activeId === datacenter.id;
             },
-            get loading() { return noteState.loading },
-            url,
-            name,
-            id,
+            datacenter,
             weather,
             onclick
         },
@@ -72,7 +60,7 @@ export function addMarker(
     el.classList.add('datacenter-marker');
 
     const marker = new maplibregl.Marker({ element: el })
-        .setLngLat([lng, lat])
+        .setLngLat([datacenter.lon, datacenter.lat])
         .addTo(map);
 
     return { marker, component, zoomState };

@@ -10,10 +10,9 @@
     import mapStyle from "./osm_surface.json";
 
     import { MapRaseriser } from "./glyphRenderer.ts";
-    import type { DatacenterInfo, Props } from "./types.ts";
+    import type { Props } from "./types.ts";
     import { addMarker, markerState } from "./marker.svelte.ts";
     import DebugPanel from "./DebugPanel.svelte";
-    import Marker from "./Marker.svelte";
 
     let mapContainer: HTMLDivElement;
     let mapBuildingsContainer: HTMLDivElement;
@@ -29,8 +28,8 @@
     let {
         zoom = 2,
         center = [0, 0],
-        geoJSON,
         datacenters,
+        weatherData = {},
         glyphSize = 10,
         children,
     }: Props = $props();
@@ -48,12 +47,15 @@
     }
 
     $effect(() => {
-        if (markerState.activeId == null) {
+        if (markerState.activeId == null || markerState.datacenter == null) {
             map?.easeTo({ padding: { right: 0 }, duration: 1000 });
         } else {
             map?.flyTo({
-                zoom: 15,
-                center: [markerState.lng, markerState.lat],
+                zoom: 16,
+                center: [
+                    markerState.datacenter.lon,
+                    markerState.datacenter.lat,
+                ],
                 padding: { right: 350 },
                 duration: 1000,
             });
@@ -89,13 +91,6 @@
                 animate: false,
             });
         }
-        // if (geoJSON) {
-        //     const coordinates = geoJSON.data.features.map((f: any) => {
-        //         return f.geometry.coordinates;
-        //     });
-        //
-        // });
-        // }
 
         mapCanvas = map.getCanvas();
         mapCanvas.style.opacity = "0";
@@ -140,37 +135,14 @@
 
         if (datacenters?.length) {
             datacenters.forEach((dc) => {
-                const { id, name, lat, lon, precise } = dc;
                 datacenterMarkers.push(
                     addMarker(map, {
-                        lat,
-                        lng: lon,
-                        id,
-                        name,
+                        datacenter: dc,
+                        weather: weatherData[dc.id],
                     }),
                 );
             });
         }
-
-        // if (geoJSON) {
-        //     console.log(geoJSON);
-        //     geoJSON.data.features.forEach((ds: DatacenterInfo) => {
-        //         const { url, id, weather, name, links } = ds.properties;
-        //         const { coordinates } = ds.geometry;
-        //
-        //         datacenterMarkers.push(
-        //             addMarker(map, {
-        //                 lat: coordinates[1],
-        //                 lng: coordinates[0],
-        //                 url,
-        //                 id,
-        //                 name,
-        //                 links,
-        //                 weather,
-        //             }),
-        //         );
-        //     });
-        // }
     });
 
     onDestroy(() => {

@@ -1,13 +1,16 @@
 
+# Databases
+*.sqlite
 *.sqlite3
 *.db
 *.db-shm
 *.db-wal
 
-*.sqlite
-
-
+# Node
 node_modules
+
+# Dynamic resources
+static/images/
 
 # Output
 .output

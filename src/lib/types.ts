@@ -66,8 +66,9 @@ export interface Datacenter {
     lat: number,
     lon: number,
     precise: boolean,
-    links: string,
+    links?: string,
     city: string,
+    filename?: string,
     country_code: string,
     last_update: number,
 };

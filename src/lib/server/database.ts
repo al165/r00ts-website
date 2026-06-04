@@ -21,6 +21,7 @@ db.pragma('journal_mode = WAL');
 import { findMigrationFilenames, readMigrationFile } from 'migration-files'
 import { intToIP, IPtoInt } from './ip_utils';
 import { getFacilitiesFromASN, getPeeringDBNetwork } from './peeringdb';
+import { fetchSatilliteView } from './mapbox_fetch';
 
 const filenames = await findMigrationFilenames(path.join(process.cwd(), 'src/lib/server/migrations'));
 const migrations = await Promise.all(filenames.map(readMigrationFile));
@@ -392,9 +393,62 @@ export async function getDatacenters(asn: number, country_code?: string)
     return { success: true, facilities };
 }
 
+export function getAllDatacenters(): Datacenter[] {
+    return db.prepare(`SELECT * FROM Datacenters `).all() as Datacenter[];
+}
+
 export function getDatacentersFromIds(ids: number[]): Datacenter[] {
     const placeholder = ids.map(_ => "?").join(',');
     const datacenters = db.prepare(`SELECT * FROM Datacenters WHERE id IN (${placeholder})`).all(ids) as Datacenter[];
 
+    let count = 0;
+    for (const dc of datacenters) {
+        if (dc.filename != null)
+            continue;
+
+        fetchSatilliteView(dc.lon, dc.lat).then(res => {
+            if (!res.success || !res.filename)
+                return;
+
+            updateDatacenterFilename(dc.id, res.filename);
+        });
+
+        count += 1;
+
+        // limit number of API requests
+        if (count > 5)
+            break;
+    }
+
     return datacenters;
+}
+
+export async function getDatacenterAerialImage(id: number): Promise<string | null> {
+    try {
+        const { lat, lon, filename } = db.prepare('SELECT lat, lon FROM Datacenters WHERE id = ?').get(id) as Datacenter;
+
+        if (filename != null)
+            return filename;
+
+        const res = await fetchSatilliteView(lon, lat);
+        if (!res.success || !res.filename)
+            return null;
+
+        updateDatacenterFilename(id, res.filename);
+        return res.filename;
+
+    } catch (err) {
+        console.error(`Error fetching coordinates of ${id}`);
+        console.error(err);
+        return null;
+    }
+}
+
+export function updateDatacenterFilename(id: number, filename: string) {
+    try {
+        db.prepare('UPDATE Datacenters SET filename = ? WHERE id = ?').run(filename, id);
+    } catch (err) {
+        console.error(`Error updating datacenter ${id}`);
+        console.error(err);
+    }
 }

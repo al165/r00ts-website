@@ -1,4 +1,4 @@
-import { getDatacentersFromIds } from "$lib/server/database.js";
+import { getAllDatacenters, getDatacentersFromIds } from "$lib/server/database.js";
 import type { Datacenter, Weather } from "$lib/types";
 
 const weatherCache: { [key: number]: Weather } = {};
@@ -9,60 +9,24 @@ export async function load({ url }) {
     let datacenters: Datacenter[] = [];
     if (ids) {
         const ids_obj = JSON.parse(ids);
-        if (Array.isArray(ids_obj))
+        if (Array.isArray(ids_obj)) {
             datacenters = getDatacentersFromIds(ids_obj);
+        }
+    } else {
+        datacenters = getAllDatacenters();
     }
 
-    // TODO: load from database!
-    const datacentersGeoJson = {
-        'type': 'geojson',
-        'data': {
-            'type': 'FeatureCollection',
-            'features': [
-                {
-                    'type': 'Feature',
-                    'properties': {
-                        'description': 'Digital Realty Amsterdam AMS17',
-                        'url': 'img1.png',
-                        'name': 'Digital Realty Amsterdam AMS17',
-                        'links': ['https://www.digitalrealty.com/data-centers/emea/amsterdam/ams17'],
-                        'id': 1,
-                        'weather': { 'temp': null as number | null, 'weatherCode': 0 }
-                    },
-                    'geometry': {
-                        'type': 'Point',
-                        'coordinates': [4.9508, 52.3571]
-                    }
-                },
-                {
-                    'type': 'Feature',
-                    'properties': {
-                        'description': '',
-                        'url': 'img2.png',
-                        'id': 2,
-                        'name': 'Equinix Amsterdam AM4',
-                        'links': ['https://www.equinix.com/data-centers/europe-colocation/netherlands-colocation/amsterdam-data-centers/am4']
-                    },
-                    'geometry': {
-                        'type': 'Point',
-                        'coordinates': [4.9614, 52.3546]
-                    }
-                }
-            ]
-        }
-    }
+    const weatherResults: { [key: number]: Weather } = {};
 
     // Get weather info
     // const now = Date.now() / 1000;
-    // for (const { properties, geometry } of datacentersGeoJson.data.features) {
-    //     const { id } = properties;
+    // for (const dc of datacenters) {
+    //     const { id, lon, lat } = dc;
     //     if (!weatherCache[id] || weatherCache[id].timestamp > now + 60 * 60) {
-    //
-    //         const [lng, lat] = geometry.coordinates;
     //
     //         const params = new URLSearchParams({
     //             latitude: String(lat),
-    //             longitude: String(lng),
+    //             longitude: String(lon),
     //             current: 'weather_code,temperature_2m',
     //             forcast_days: '1'
     //         });
@@ -80,7 +44,7 @@ export async function load({ url }) {
     //             }
     //
     //             weatherCache[id] = weather;
-    //             properties.weather = weather;
+    //             weatherResults[id] = weather;
     //         } catch (err) {
     //             console.error(err)
     //             continue;
@@ -89,9 +53,9 @@ export async function load({ url }) {
     //
     //
     //     } else {
-    //         properties.weather = weatherCache[id];
+    //         weatherResults[id] = weatherCache[id];
     //     }
     // }
 
-    return { datacentersGeoJson, datacenters };
+    return { datacenters, weatherResults };
 }

@@ -1,21 +1,16 @@
 <script lang="ts">
-    import type { Weather } from "$lib/types";
+    import type { Datacenter, Weather } from "$lib/types";
 
     let {
-        url,
-        name,
         zoom = 13,
         open = false,
+        datacenter,
         weather = undefined,
-        loading = true,
         onclick,
     }: {
-        id: number;
-        url?: string;
-        name: string;
         zoom: number;
         open: boolean;
-        loading: boolean;
+        datacenter: Datacenter;
         weather?: Weather;
         onclick: (e?: MouseEvent) => void;
     } = $props();
@@ -28,21 +23,29 @@
         class="marker"
         class:marker-open={open}
         class:marker-small={zoomed}
+        class:marker-unknown={datacenter.filename == null}
         {onclick}
         role="button"
         tabindex="0"
         aria-label="Datacenter"
         onkeydown={(e) => e.key === "Enter" && onclick?.()}
     >
-        <img
-            class="aerial"
-            src={url ? url : "img1.png"}
-            alt="Aerial view of {name}"
-        />
-        {#if weather && open}
-            <div class="weather">
-                {weather.temp}°C
+        {#if open && !zoomed}
+            <div class="title">
+                <h1>{datacenter.name}</h1>
+                {#if weather}
+                    <div class="weather">
+                        {weather.temp}°C
+                    </div>
+                {/if}
             </div>
+        {/if}
+        {#if datacenter.filename && datacenter.precise}
+            <img
+                class="aerial"
+                src="/images/aerial/{datacenter.filename}"
+                alt="Aerial view of {datacenter.name}"
+            />
         {/if}
     </div>
 </div>
@@ -56,6 +59,8 @@
     .marker {
         height: 200px;
         width: 200px;
+        background: yellow;
+        padding: 0.8em;
         transition-property: width, height !important;
         transition-duration: 1s !important;
         position: relative;
@@ -71,13 +76,33 @@
     .aerial {
         background-size: cover;
         height: 100%;
-        border: 0.8em solid white;
         box-sizing: border-box;
     }
 
     .marker-small {
         width: 50px;
         height: 50px;
+    }
+
+    .marker-unknown {
+        width: 8px;
+        height: 8px;
+    }
+
+    .title {
+        box-sizing: border-box;
+        position: absolute;
+        right: 0;
+        bottom: 100%;
+        width: 100%;
+        background-color: yellow;
+        padding: 0.8em;
+        overflow: hidden;
+    }
+
+    h1 {
+        font-size: 12pt;
+        margin: 0 auto;
     }
 
     .weather {

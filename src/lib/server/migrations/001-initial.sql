@@ -32,6 +32,7 @@ CREATE TABLE Datacenters (
     precise NUMBER,
     links TEXT,
     city TEXT,
+    filename TEXT,
     country_code TEXT,
     last_update INTEGER
 );

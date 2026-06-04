@@ -3,11 +3,11 @@
     import Map from "$lib/components/Map/Map.svelte";
 
     const { data } = $props();
-    let { datacenters, datacentersGeoJson } = data;
+    let datacenters = $state(data.datacenters);
 </script>
 
 <div class="contents">
-    <Map {datacenters} geoJSON={datacentersGeoJson}>
+    <Map {datacenters}>
         <DataPanel />
     </Map>
 </div>

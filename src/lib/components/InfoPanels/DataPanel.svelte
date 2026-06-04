@@ -24,21 +24,21 @@
         if (cache[activeId]?.notes == undefined) {
             notes = [];
 
-            loading.notes = true;
+            // loading.notes = true;
 
-            fetch(`/api/note?datacenter_id=${activeId}`)
-                .then((res) => res.json())
-                .then((data) => {
-                    notes = data.notes;
-                    if (cache[activeId]) cache[activeId].notes = data.notes;
-                    else cache[activeId] = { notes: data.notes };
-                })
-                .catch((err) => {
-                    console.error(err);
-                })
-                .finally(() => {
-                    loading.notes = false;
-                });
+            // fetch(`/api/note?datacenter_id=${activeId}`)
+            //     .then((res) => res.json())
+            //     .then((data) => {
+            //         notes = data.notes;
+            //         if (cache[activeId]) cache[activeId].notes = data.notes;
+            //         else cache[activeId] = { notes: data.notes };
+            //     })
+            //     .catch((err) => {
+            //         console.error(err);
+            //     })
+            //     .finally(() => {
+            //         loading.notes = false;
+            //     });
         } else {
             notes = cache[activeId].notes;
         }
@@ -55,26 +55,34 @@
     }
 </script>
 
-<div class="wrapper" class:hidden={markerState.activeId == null}>
-    <div class="panel">
-        {#if markerState.properties.links?.length}
-            <h1>
-                <a
-                    href={markerState.properties.links[0]}
-                    rel="noopener"
-                    target="_blank"
-                >
-                    {markerState.properties.name}
-                </a>
-            </h1>
-        {:else}
-            <h1>{markerState.properties.name}</h1>
-        {/if}
-        <NoteList {notes} />
-        {#key markerState.activeId}
-            <AddNotePanel id={markerState.activeId} {newNoteAdded} />
-        {/key}
-    </div>
+<div
+    class="wrapper"
+    class:hidden={markerState.activeId == null ||
+        markerState.datacenter == null}
+>
+    {#if markerState.datacenter != null}
+        <div class="panel">
+            {#if markerState.datacenter.links?.length}
+                <h1>
+                    <a
+                        href={markerState.datacenter.links[0]}
+                        rel="noopener"
+                        target="_blank"
+                    >
+                        {markerState.datacenter.name}
+                    </a>
+                </h1>
+            {:else}
+                <h1>{markerState.datacenter.name}</h1>
+            {/if}
+            <p>Lat: {markerState.datacenter.lat}</p>
+            <p>Lon: {markerState.datacenter.lon}</p>
+            <NoteList {notes} />
+            {#key markerState.activeId}
+                <AddNotePanel id={markerState.activeId} {newNoteAdded} />
+            {/key}
+        </div>
+    {/if}
 </div>
 
 <style>

@@ -5,25 +5,9 @@ export interface Props {
     center?: [number, number];
     geoJSON?: any;
     datacenters?: Datacenter[];
+    weatherData?: { [key: number]: Weather };
     glyphSize?: number;
     children?: any
-}
-
-export interface DatacenterInfo {
-    type: string;
-    properties: {
-        description: string;
-        url: string;
-        id: number;
-        weather?: Weather;
-        name: string;
-        links?: string[];
-    };
-    geometry: {
-        type: string;
-        coordinates: [number, number];
-    };
-    marker?: maplibregl.Marker;
 }
 
 export type Colour = [number, number, number];
