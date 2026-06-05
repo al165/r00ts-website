@@ -1,5 +1,5 @@
-import { getAllDatacenters, getDatacentersFromIds } from "$lib/server/database.js";
-import type { Datacenter, Weather } from "$lib/types";
+import { getAllDatacenters, getDatacentersFromIds, getNetworksFromIds } from "$lib/server/database.js";
+import type { Datacenter, Network, Weather } from "$lib/types";
 
 const weatherCache: { [key: number]: Weather } = {};
 
@@ -10,14 +10,23 @@ export async function load({ url }) {
     let datacenters: Datacenter[] = [];
     let data;
     let ipData;
-    let ids;
+    let pageUrl: string | undefined;
+    let networks: { [key: number]: Network } = {};
+    let networksDatacenters;
 
     if (data64) {
         try {
             data = JSON.parse(atob(data64));
-            ids = data['facility_ids'];
-            datacenters = getDatacentersFromIds(ids);
+            console.log(data);
+            datacenters = getDatacentersFromIds(data['facility_ids']);
+
+            const network_list = getNetworksFromIds(data['network_ids']);
+            network_list.map(net => networks[net.id] = net);
+            networksDatacenters = data['network_datacenters'];
+            console.log(networksDatacenters);
             ipData = data['entries'];
+            pageUrl = data['pageUrl'];
+
         } catch (err) {
             console.error(err);
         }
@@ -64,5 +73,5 @@ export async function load({ url }) {
     //     }
     // }
 
-    return { datacenters, weatherResults, showDebug, ipData };
+    return { datacenters, weatherResults, showDebug, ipData, networks, networksDatacenters, pageUrl };
 }

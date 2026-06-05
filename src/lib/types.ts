@@ -98,5 +98,5 @@ export type Entry = {
     hostname: string,
     count: number,
     durationMs?: number,
-    network?: string,
+    network_id?: number,
 }

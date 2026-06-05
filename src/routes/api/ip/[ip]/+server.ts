@@ -54,5 +54,5 @@ export async function GET({ params, url, getClientAddress }) {
         country_code
     };
 
-    return json({ facilities: facilitiesRequest.facilities, user });
+    return json({ facilities: facilitiesRequest.facilities, network: networkRequest.network, user });
 }

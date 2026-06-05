@@ -394,6 +394,12 @@ export async function getDatacenters(asn: number, country_code?: string)
     return { success: true, facilities };
 }
 
+export function getNetworksFromIds(ids: number[]) {
+    const placeholder = ids.map(_ => "?").join(',');
+
+    return db.prepare(`SELECT * FROM Networks WHERE id IN (${placeholder})`).all(ids) as Network[];
+}
+
 export function getAllDatacenters(): Datacenter[] {
     return db.prepare(`SELECT * FROM Datacenters `).all() as Datacenter[];
 }
@@ -420,6 +426,9 @@ export function getDatacentersFromIds(ids: number[]): Datacenter[] {
         if (count > 5)
             break;
     }
+
+    // const networks = db.prepare(`SELECT * FROM Networks n JOIN NetworksDatacenters nd ON nd.network_id = n.id WHERE nd.datacenter_id IN (${placeholder}) GROUP BY n.id`).all(ids) as Network[];
+    // console.log(networks);
 
     return datacenters;
 }

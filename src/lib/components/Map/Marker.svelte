@@ -16,7 +16,10 @@
 
     let zoomed = $derived(zoom < 13);
     let open = $derived(markerState.datacenter?.id == datacenter.id);
-    let highlighted = $derived(markerState.highlighted.includes(datacenter.id));
+    let highlighted = $derived(
+        markerState.highlighted.includes(datacenter.id) ||
+            markerState.preview.includes(datacenter.id),
+    );
 </script>
 
 <!-- class:marker-open={open && !zoomed} -->
@@ -60,7 +63,7 @@
     .marker {
         max-height: 350px;
         max-width: 350px;
-        background: #e7e7e7;
+        background: #ff5f1f;
         padding: 0.8em;
         transition-property: max-width, max-height, min-width !important;
         transition-duration: 1s !important;
@@ -85,7 +88,7 @@
     }
 
     .highlighted {
-        background: #edff00 !important;
+        background: yellow !important;
     }
 
     .title {
@@ -94,7 +97,7 @@
         right: 0;
         bottom: 100%;
         width: 100%;
-        background: #e7e7e7;
+        background: #ff5f1f;
         padding: 0.8em;
         overflow: hidden;
     }

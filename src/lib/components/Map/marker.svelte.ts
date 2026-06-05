@@ -8,7 +8,8 @@ import Marker from "./Marker.svelte";
 
 export const markerState = $state({
     datacenter: null as Datacenter | null,
-    highlighted: [] as number[]
+    highlighted: [] as number[],
+    preview: [] as number[]
 });
 
 export function addMarker(

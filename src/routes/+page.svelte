@@ -10,7 +10,12 @@
     <Map datacenters={data.datacenters} showDebug={data.showDebug}>
         <DataPanel />
         {#if data.ipData}
-            <IpPanel entries={data.ipData} />
+            <IpPanel
+                entries={data.ipData}
+                networks={data.networks}
+                networksDatacenters={data.networksDatacenters}
+                pageUrl={data.pageUrl}
+            />
         {/if}
     </Map>
 </div>
