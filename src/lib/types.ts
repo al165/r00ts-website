@@ -92,3 +92,11 @@ export type Weather = {
     temp: number,
     timestamp: number
 };
+
+export type Entry = {
+    ip: string,
+    hostname: string,
+    count: number,
+    durationMs?: number,
+    network?: string,
+}

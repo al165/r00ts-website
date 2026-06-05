@@ -4,21 +4,27 @@ import type { Datacenter, Weather } from "$lib/types";
 const weatherCache: { [key: number]: Weather } = {};
 
 export async function load({ url }) {
-    const ids = url.searchParams.get('ids');
     const showDebug = url.searchParams.get('debug') ? true : false;
+    const data64 = url.searchParams.get('data');
 
     let datacenters: Datacenter[] = [];
-    if (ids) {
-        const ids_obj = JSON.parse(ids);
-        if (Array.isArray(ids_obj)) {
-            datacenters = getDatacentersFromIds(ids_obj);
+    let data;
+    let ipData;
+    let ids;
+
+    if (data64) {
+        try {
+            data = JSON.parse(atob(data64));
+            ids = data['facility_ids'];
+            datacenters = getDatacentersFromIds(ids);
+            ipData = data['entries'];
+        } catch (err) {
+            console.error(err);
         }
-    } else {
+    } else
         datacenters = getAllDatacenters();
-    }
 
     const weatherResults: { [key: number]: Weather } = {};
-
     // Get weather info
     // const now = Date.now() / 1000;
     // for (const dc of datacenters) {
@@ -58,5 +64,5 @@ export async function load({ url }) {
     //     }
     // }
 
-    return { datacenters, weatherResults, showDebug };
+    return { datacenters, weatherResults, showDebug, ipData };
 }

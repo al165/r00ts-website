@@ -7,8 +7,8 @@ import Marker from "./Marker.svelte";
 
 
 export const markerState = $state({
-    activeId: null as number | null,
-    datacenter: null as Datacenter | null
+    datacenter: null as Datacenter | null,
+    highlighted: [] as number[]
 });
 
 export function addMarker(
@@ -16,25 +16,25 @@ export function addMarker(
     {
         datacenter,
         weather,
+        zoomState,
     }: {
         datacenter: Datacenter;
         weather?: Weather;
+        zoomState: { value: number }
     },
 ) {
-    const zoomState = $state({ value: map.getZoom() });
+    const datacenterData = $state(datacenter);
 
     async function onclick(e?: MouseEvent) {
         e?.stopPropagation();
 
-        const isOpening = markerState.activeId != datacenter.id;
-        markerState.activeId = isOpening ? datacenter.id : null;
         markerState.datacenter = datacenter;
 
-        if (datacenter.filename == null && datacenter.precise) {
+        if (datacenterData.filename == null && datacenterData.precise) {
             fetch(`/api/aerial/${datacenter.id}`)
                 .then(res => res.json())
                 .then(data => {
-                    datacenter.filename = data.filename;
+                    datacenterData.filename = data.filename;
                 }).catch(err => {
                     console.error(err);
                 })
@@ -48,10 +48,7 @@ export function addMarker(
             get zoom() {
                 return zoomState.value;
             },
-            get open() {
-                return markerState.activeId === datacenter.id;
-            },
-            datacenter,
+            datacenter: datacenterData,
             weather,
             onclick
         },
@@ -63,5 +60,5 @@ export function addMarker(
         .setLngLat([datacenter.lon, datacenter.lat])
         .addTo(map);
 
-    return { marker, component, zoomState };
+    return { marker, component, id: datacenterData.id };
 }

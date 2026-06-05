@@ -96,7 +96,7 @@ export function addNote(type: NoteType, title?: string, url?: string, body?: str
 }
 
 export async function getNetwork(ip: number | string)
-    : Promise<{ success: boolean, reason?: string, network?: Network }> {
+    : Promise<{ success: boolean, reason?: string, network?: Network, datacenter_ids?: number[] }> {
     let ip_int: number;
     let ip_str: string;
 
@@ -119,7 +119,10 @@ export async function getNetwork(ip: number | string)
     if (ipBlock) {
         try {
             let network = db.prepare('SELECT * FROM Networks WHERE id = ?').get([ipBlock.network_id]) as Network;
-            return { success: true, network };
+            let datacenter_ids = db.prepare('SELECT datacenter_id FROM NetworksDatacenters WHERE network_id = ?')
+                .all(ipBlock.network_id)
+                .map((row: any) => row.datacenter_id) as number[];
+            return { success: true, network, datacenter_ids };
         } catch (err) {
             console.error(`Error getting Network with id ${ipBlock.network_id}`);
             console.error(err);
@@ -212,7 +215,11 @@ export async function getNetwork(ip: number | string)
         return { success: false, reason: 'Error adding ip block to database' };
     }
 
-    return { success: true, network: network_asn };
+    let datacenter_ids = db.prepare('SELECT datacenter_id FROM NetworksDatacenters WHERE network_id = ?')
+        .all(network_id)
+        .map((row: any) => row.datacenter_id) as number[];
+
+    return { success: true, network: network_asn, datacenter_ids };
 }
 
 function getNeighbours(country_code: string) {
@@ -258,8 +265,6 @@ function iterativeSearch(asn: number, country_code?: string): Datacenter[] {
     }
 
     console.log(" - 1 Initial search...");
-    // console.log(facility_query);
-    // console.log(facility_query_params);
     let facilities = db.prepare(facility_query.join(' ')).all(facility_query_params) as Datacenter[];
 
     if (facilities && facilities.length > 0)
@@ -278,8 +283,6 @@ function iterativeSearch(asn: number, country_code?: string): Datacenter[] {
     facility_query_params = [asn, ...neighbours];
 
     console.log(" - 2 Attempting continent...");
-    // console.log(facility_query);
-    // console.log(facility_query_params);
     facilities = db.prepare(facility_query.join(' ')).all(facility_query_params) as Datacenter[];
 
     if (facilities && facilities.length > 0)
@@ -287,8 +290,6 @@ function iterativeSearch(asn: number, country_code?: string): Datacenter[] {
 
     // Otherwise try worldwide...
     console.log(" - 3 Attempting worldwide...");
-    // console.log(select_clause);
-    // console.log(asn);
     facilities = db.prepare(select_clause).all(asn) as Datacenter[];
 
     return facilities;

@@ -1,29 +1,30 @@
 <script lang="ts">
     import type { Datacenter, Weather } from "$lib/types";
+    import { markerState } from "./marker.svelte";
 
     let {
         zoom = 13,
-        open = false,
         datacenter,
         weather = undefined,
         onclick,
     }: {
         zoom: number;
-        open: boolean;
         datacenter: Datacenter;
         weather?: Weather;
         onclick: (e?: MouseEvent) => void;
     } = $props();
 
     let zoomed = $derived(zoom < 13);
+    let open = $derived(markerState.datacenter?.id == datacenter.id);
+    let highlighted = $derived(markerState.highlighted.includes(datacenter.id));
 </script>
 
+<!-- class:marker-open={open && !zoomed} -->
 <div class="marker-root" class:front={open}>
     <div
         class="marker"
-        class:marker-open={open}
         class:marker-small={zoomed}
-        class:marker-unknown={datacenter.filename == null}
+        class:highlighted
         {onclick}
         role="button"
         tabindex="0"
@@ -31,7 +32,7 @@
         onkeydown={(e) => e.key === "Enter" && onclick?.()}
     >
         {#if open && !zoomed}
-            <div class="title">
+            <div class="title" class:highlighted>
                 <h1>{datacenter.name}</h1>
                 {#if weather}
                     <div class="weather">
@@ -57,20 +58,15 @@
     }
 
     .marker {
-        height: 200px;
-        width: 200px;
-        background: yellow;
+        max-height: 350px;
+        max-width: 350px;
+        background: #e7e7e7;
         padding: 0.8em;
-        transition-property: width, height !important;
+        transition-property: max-width, max-height, min-width !important;
         transition-duration: 1s !important;
         position: relative;
         cursor: pointer;
         z-index: 2;
-    }
-
-    .marker-open,
-    .marker:hover {
-        transform: scale(1.1);
     }
 
     .aerial {
@@ -79,14 +75,17 @@
         box-sizing: border-box;
     }
 
-    .marker-small {
-        width: 50px;
-        height: 50px;
+    img {
+        width: 100%;
     }
 
-    .marker-unknown {
-        width: 8px;
-        height: 8px;
+    .marker-small {
+        max-width: 50px;
+        max-height: 50px;
+    }
+
+    .highlighted {
+        background: #edff00 !important;
     }
 
     .title {
@@ -95,7 +94,7 @@
         right: 0;
         bottom: 100%;
         width: 100%;
-        background-color: yellow;
+        background: #e7e7e7;
         padding: 0.8em;
         overflow: hidden;
     }

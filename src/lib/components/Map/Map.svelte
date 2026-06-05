@@ -38,8 +38,11 @@
     let datacenterMarkers: {
         marker: maplibregl.Marker;
         component: any;
-        zoomState: { value: number };
+        id: number;
     }[] = [];
+
+    // svelte-ignore state_referenced_locally
+    let zoomState = $state({ value: zoom });
 
     let rasteriser = $state<MapRaseriser | null>(null);
 
@@ -47,8 +50,22 @@
         mapBuildingsLayer.setStyle(style, { diff: true });
     }
 
+    function fitAll(animate: boolean = false) {
+        if (datacenters?.length) {
+            const bounds = datacenters.reduce((bounds, dc) => {
+                return bounds.extend([dc.lon, dc.lat]);
+            }, new maplibregl.LngLatBounds());
+
+            map.fitBounds(bounds, {
+                maxZoom: 16,
+                padding: 100,
+                animate,
+            });
+        }
+    }
+
     $effect(() => {
-        if (markerState.activeId == null || markerState.datacenter == null) {
+        if (markerState.datacenter == null) {
             map?.easeTo({ padding: { right: 0 }, duration: 1000 });
         } else {
             map?.flyTo({
@@ -60,6 +77,18 @@
                 padding: { right: 350 },
                 duration: 1000,
             });
+        }
+    });
+
+    $effect(() => {
+        if (markerState.highlighted.length) {
+            const bounds = new maplibregl.LngLatBounds();
+            datacenterMarkers.map((dm) => {
+                if (markerState.highlighted.includes(dm.id))
+                    bounds.extend(dm.marker.getLngLat());
+            });
+
+            map.fitBounds(bounds, { maxZoom: 16, padding: 100 });
         }
     });
 
@@ -81,17 +110,7 @@
 
         syncMaps(map, mapBuildingsLayer);
 
-        if (datacenters?.length) {
-            const bounds = datacenters.reduce((bounds, dc) => {
-                return bounds.extend([dc.lon, dc.lat]);
-            }, new maplibregl.LngLatBounds());
-
-            map.fitBounds(bounds, {
-                maxZoom: 14,
-                padding: 30,
-                animate: false,
-            });
-        }
+        fitAll();
 
         mapCanvas = map.getCanvas();
         mapCanvas.style.opacity = "0";
@@ -116,11 +135,7 @@
 
         map.on("load", () => {
             map.on("zoom", () => {
-                const zoom = map.getZoom();
-
-                for (const { zoomState } of datacenterMarkers) {
-                    zoomState.value = zoom;
-                }
+                zoomState.value = map.getZoom();
             });
 
             new ResizeObserver(() =>
@@ -129,7 +144,7 @@
         });
 
         map.on("click", () => {
-            markerState.activeId = null;
+            markerState.datacenter = null;
         });
 
         rasteriser?.resize(mapCanvas.width, mapCanvas.height);
@@ -140,6 +155,7 @@
                     addMarker(map, {
                         datacenter: dc,
                         weather: weatherData[dc.id],
+                        zoomState,
                     }),
                 );
             });
@@ -174,6 +190,7 @@
     {#if showDebug}
         <DebugPanel {rasteriser} {mapBuildingsStyle} {setBuildingStyle} />
     {/if}
+    <button class="fit-btn" onclick={() => fitAll(true)}>fit all</button>
     {@render children?.()}
 </div>
 
@@ -198,5 +215,17 @@
 
     .map-overlay {
         pointer-events: none;
+    }
+
+    .fit-btn {
+        position: absolute;
+        bottom: 1em;
+        left: 1em;
+        border: none;
+        cursor: pointer;
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 600;
+        font-size: 16pt;
+        z-index: 3;
     }
 </style>
