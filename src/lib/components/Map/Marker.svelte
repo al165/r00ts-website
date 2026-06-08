@@ -50,6 +50,14 @@
                 src="/images/aerial/{datacenter.filename}"
                 alt="Aerial view of {datacenter.name}"
             />
+        {:else if open && !datacenter.precise && !zoomed}
+            <div class="caption">
+                <span>
+                    Exact location unknown! All we know is that it is in <em
+                        >{datacenter.city}</em
+                    >. Help us find it's address!
+                </span>
+            </div>
         {/if}
     </div>
 </div>
@@ -80,6 +88,11 @@
 
     img {
         width: 100%;
+    }
+
+    .caption {
+        width: 100%;
+        height: 100%;
     }
 
     .marker-small {
