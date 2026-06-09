@@ -2,6 +2,7 @@
     import type { Entry, Network } from "$lib/types";
 
     import { markerState } from "../Map/marker.svelte";
+    import IpDetailsPanel from "./IpDetailsPanel.svelte";
 
     interface Props {
         entries: { [key: string]: Entry };
@@ -48,77 +49,79 @@
             result[entry.network_id].push(entries[ip]);
         }
 
+        for (const net_id of Object.keys(result)) {
+            result[parseInt(net_id)].sort((a, b) => {
+                return a.ip < b.ip ? -1 : 1;
+            });
+        }
+
         return result;
     });
+
+    let entryElement: HTMLDivElement | null = $state(null);
 </script>
 
-<div class="container">
-    <span>[ {pageHostname} ]</span>
-    {#each Object.keys(networkIps) as netId}
-        <div
-            class="entry"
-            class:selected={selectedNetId == parseInt(netId)}
-            onclick={() =>
-                (selectedNetId =
-                    selectedNetId == parseInt(netId) ? null : parseInt(netId))}
-            onmouseover={() => {
-                preview(parseInt(netId));
-            }}
-            onfocus={() => {
-                preview(parseInt(netId));
-            }}
-            onmouseout={() => {
-                preview(null);
-            }}
-            onblur={() => {
-                preview(null);
-            }}
-            role="button"
-            tabindex="0"
-            aria-label="Datacenter"
-            onkeydown={() => {}}
-        >
-            <span> {networks[parseInt(netId)].network_name} </span>
-            {#each networkIps[parseInt(netId)] as entry}
-                <span class="ip">{entry.ip}</span>
-            {/each}
-
-            {#if selectedNetId == parseInt(netId) && selectedNetId != null}
-                <div class="entry-info">
-                    <div class="entry-data">
-                        <span>{networks[selectedNetId].organisation_name}</span>
-                        <table>
-                            <tbody>
-                                {#each networkIps[selectedNetId] as entry}
-                                    <tr>
-                                        <td><span>({entry.count})</span></td>
-                                        <td><span>{entry.hostname}</span></td>
-                                        <td>
-                                            <span>[{entry.durationMs}ms]</span>
-                                        </td>
-                                    </tr>
-                                {/each}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            {/if}
-        </div>
-    {/each}
+<div class="wrapper">
+    <div class="container">
+        <span>[ {pageHostname} ]</span>
+        {#each Object.keys(networkIps) as netId}
+            <div
+                class="entry"
+                class:selected={selectedNetId == parseInt(netId)}
+                onclick={(ev) => {
+                    selectedNetId =
+                        selectedNetId == parseInt(netId)
+                            ? null
+                            : parseInt(netId);
+                    entryElement = ev.currentTarget;
+                }}
+                onmouseover={() => {
+                    preview(parseInt(netId));
+                }}
+                onfocus={() => {
+                    preview(parseInt(netId));
+                }}
+                onmouseout={() => {
+                    preview(null);
+                }}
+                onblur={() => {
+                    preview(null);
+                }}
+                role="button"
+                tabindex="0"
+                aria-label="Datacenter"
+                onkeydown={() => {}}
+            >
+                <span class="net-name">
+                    {networks[parseInt(netId)].network_name}
+                </span>
+                {#each networkIps[parseInt(netId)] as entry}
+                    <span class="ip">{entry.ip}</span>
+                {/each}
+            </div>
+        {/each}
+    </div>
+    <IpDetailsPanel {networks} {networkIps} {selectedNetId} {entryElement} />
 </div>
 
 <style>
-    .container {
-        background: #e7e7e7;
-        display: flex;
-        flex-direction: column;
-        font-family: "JetBrains Mono", monospace;
-        font-weight: 600;
-        font-size: 16pt;
+    .wrapper {
         position: absolute;
         left: 1em;
         top: 2em;
         z-index: 10;
+        display: flex;
+        max-height: 60%;
+    }
+
+    .container {
+        background: #e7e7e7;
+        display: flex;
+        overflow-y: scroll;
+        flex-direction: column;
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 600;
+        font-size: 16pt;
     }
 
     .ip {
@@ -126,7 +129,6 @@
     }
 
     .entry {
-        position: relative;
         cursor: pointer;
         border: none;
         text-align: left;
@@ -136,26 +138,17 @@
         display: flex;
         flex-direction: column;
         padding: 0 1em;
+        background: inherit;
     }
 
-    .entry-data {
-        padding: 0 1em;
-        min-width: 20em;
-        display: flex;
-        flex-direction: column;
+    .net-name {
+        position: sticky;
+        top: 0px;
+        background: inherit;
     }
 
-    .entry-info,
     .selected,
     .entry:hover {
         background: #edff00;
-    }
-
-    .entry-info {
-        position: absolute;
-        left: 100%;
-        top: 0px;
-        width: auto;
-        transition: width 1s cubic-bezier(0.25, 0.1, 0.25, 1);
     }
 </style>

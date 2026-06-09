@@ -62,9 +62,11 @@
             <span>City: {markerState.datacenter.city}</span>
             {#if ips.length > 0}
                 <p>Potentially served:</p>
-                {#each ips as ip}
-                    <span class="indent">{ip}</span>
-                {/each}
+                <div class="ip-list">
+                    {#each ips as ip}
+                        <span class="indent">{ip}</span>
+                    {/each}
+                </div>
             {/if}
         {/if}
     </div>
@@ -91,17 +93,18 @@
         z-index: 11;
         width: 350px;
         overflow: hidden;
+        height: 70%;
     }
 
     .panel {
+        position: relative;
         background-color: #e7e7e7;
         padding: 1.5em;
+        width: 350px;
         height: 100%;
-        width: calc(350px - 2 * 1.5em);
-        overflow-y: scroll;
         display: flex;
         flex-direction: column;
-        position: relative;
+        box-sizing: border-box;
     }
 
     .hidden {
@@ -119,5 +122,12 @@
         border: none;
         padding: 1em;
         cursor: pointer;
+    }
+
+    .ip-list {
+        flex-grow: 2;
+        overflow-y: scroll;
+        display: flex;
+        flex-direction: column;
     }
 </style>
