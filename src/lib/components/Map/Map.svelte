@@ -10,9 +10,9 @@
     import mapStyle from "./osm_surface.json";
 
     import { MapRaseriser } from "./glyphRenderer.ts";
-    import type { Props } from "./types.ts";
     import { addMarker, markerState } from "./marker.svelte.ts";
     import DebugPanel from "./DebugPanel.svelte";
+    import type { Datacenter, Weather } from "$lib/types";
 
     let mapContainer: HTMLDivElement;
     let mapBuildingsContainer: HTMLDivElement;
@@ -25,6 +25,18 @@
     let offscreenCanvas: OffscreenCanvas;
     let glyphPaletteCanvas: OffscreenCanvas;
 
+    interface Props {
+        zoom?: number;
+        center?: [number, number];
+        geoJSON?: any;
+        datacenters?: Datacenter[];
+        weatherData?: { [key: number]: Weather };
+        glyphSize?: number;
+        showDebug?: boolean;
+        children?: any;
+        leftPadding: number;
+    }
+
     let {
         zoom = 2,
         center = [0, 0],
@@ -32,6 +44,7 @@
         weatherData = {},
         glyphSize = 10,
         showDebug = false,
+        leftPadding = 100,
         children,
     }: Props = $props();
 
@@ -56,11 +69,21 @@
                 return bounds.extend([dc.lon, dc.lat]);
             }, new maplibregl.LngLatBounds());
 
-            map.fitBounds(bounds, {
-                maxZoom: 16,
-                padding: 100,
-                animate,
-            });
+            let delay = markerState.datacenter == null ? 0 : 1000;
+            markerState.datacenter = null;
+
+            setTimeout(() => {
+                map.fitBounds(bounds, {
+                    maxZoom: 16,
+                    padding: {
+                        left: leftPadding,
+                        right: 100,
+                        top: 100,
+                        bottom: 100,
+                    },
+                    animate,
+                });
+            }, delay);
         }
     }
 
@@ -88,7 +111,15 @@
                     bounds.extend(dm.marker.getLngLat());
             });
 
-            map.fitBounds(bounds, { maxZoom: 16, padding: 100 });
+            map.fitBounds(bounds, {
+                maxZoom: 16,
+                padding: {
+                    left: leftPadding,
+                    right: 100,
+                    top: 100,
+                    bottom: 100,
+                },
+            });
         }
     });
 

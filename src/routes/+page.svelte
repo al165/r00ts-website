@@ -8,8 +8,15 @@
 </script>
 
 <div class="contents">
-    <Map datacenters={data.datacenters} showDebug={data.showDebug}>
-        <DataPanel />
+    <Map
+        datacenters={data.datacenters}
+        showDebug={data.showDebug}
+        leftPadding={data.ipData ? 500 : 100}
+    >
+        <DataPanel
+            entries={data.ipData}
+            networksDatacenters={data.networksDatacenters}
+        />
         {#if data.ipData}
             <IpPanel
                 entries={data.ipData}

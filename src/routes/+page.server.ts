@@ -1,18 +1,18 @@
 import { getAllDatacenters, getDatacentersFromIds, getNetworksFromIds } from "$lib/server/database.js";
 import type { Datacenter, Network, Weather } from "$lib/types";
 
-const weatherCache: { [key: number]: Weather } = {};
+// const weatherCache: { [key: number]: Weather } = {};
 
 export async function load({ url }) {
-    const showDebug = url.searchParams.get('debug') ? true : false;
+    const showDebug: boolean = url.searchParams.get('debug') ? true : false;
     const data64 = url.searchParams.get('data');
 
     let datacenters: Datacenter[] = [];
     let data;
-    let ipData;
+    let ipData = null;
     let pageUrl: string | undefined;
     let networks: { [key: number]: Network } = {};
-    let networksDatacenters;
+    let networksDatacenters = null;
 
     if (data64) {
         try {

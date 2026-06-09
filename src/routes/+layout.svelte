@@ -46,6 +46,7 @@
         font-size: 42pt;
         padding: 0em 1em;
         margin: 0em;
+        user-select: none;
     }
 
     nav {

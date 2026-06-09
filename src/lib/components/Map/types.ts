@@ -1,16 +1,3 @@
-import type { Datacenter, Weather } from "$lib/types";
-
-export interface Props {
-    zoom?: number;
-    center?: [number, number];
-    geoJSON?: any;
-    datacenters?: Datacenter[];
-    weatherData?: { [key: number]: Weather };
-    glyphSize?: number;
-    showDebug?: boolean;
-    children?: any
-}
-
 export type Colour = [number, number, number];
 
 export type GlyphDrawFn = {

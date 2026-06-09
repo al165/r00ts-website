@@ -23,8 +23,8 @@
 
     let time = $derived(
         Object.values(entries).reduce((p, e) => {
-            return Math.max(e.durationMs ?? 0, p);
-        }, 0),
+            return Math.min(e.durationMs ?? Infinity, p);
+        }, Infinity),
     );
 
     // VERY rough upper-bound estimate of distance to server:
@@ -42,28 +42,38 @@
 <div class="container">
     <span>Your session was served by:</span>
     <ul>
-        <li>
-            <span class="ip-stat">
-                {num_ips} IP {num_ips > 1 ? "addresses" : "address"}
-            </span>
-        </li>
-        <li>
-            On up to
-            <span class="datacenter-stat">
-                {num_datacenters} datacenters
-            </span>
-        </li>
-        <li>Accross <span class="cities-stat"> {cities} </span></li>
-        <li>
-            With the longest connection taking at best <span class="time-stat"
-                >{time} milliseconds</span
-            >
-        </li>
+        {#if num_ips > 0}
+            <li>
+                <span class="ip-stat">
+                    {num_ips} IP {num_ips > 1 ? "addresses" : "address"}
+                </span>
+            </li>
+        {/if}
+        {#if num_datacenters > 0}
+            <li>
+                On up to
+                <span class="datacenter-stat">
+                    {num_datacenters} datacenters
+                </span>
+            </li>
+            <li>
+                Accross <span class="cities-stat"> {cities} </span>
+            </li>
+        {/if}
+        {#if time < Infinity}
+            <li>
+                With the shortest connection taking <span class="time-stat"
+                    >{time} milliseconds</span
+                >
+            </li>
+        {/if}
         {#if time < 500}
             <li>
-                Which roughly means <span class="distance-stat">
+                Which means its roughly
+                <span class="distance-stat">
                     within a {distance}km radius
-                </span> of your location
+                </span>
+                of your location
             </li>
         {/if}
     </ul>
@@ -74,7 +84,7 @@
         position: absolute;
         bottom: 2em;
         left: 1em;
-        max-width: 30em;
+        max-width: 24em;
         background: #e7e7e7;
         display: flex;
         flex-direction: column;

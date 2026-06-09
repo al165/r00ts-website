@@ -64,6 +64,7 @@
 
 <style>
     .marker-root {
+        font-family: "Jetbrains Mono", monospace;
         position: relative;
         pointer-events: all;
     }
@@ -126,9 +127,6 @@
         right: 0;
         padding: 0.4em 0.6em;
         background-color: white;
-        font-family: sans-serif;
-        font-size: 10pt;
-        font-weight: 600;
     }
 
     :global(.datacenter-marker) {

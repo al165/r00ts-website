@@ -1,113 +1,123 @@
 <script lang="ts">
-  import type { Datacenter, Note } from "$lib/types";
-  import { markerState } from "../Map/marker.svelte";
-  //import AddNotePanel from "./AddNotePanel.svelte";
-  import NoteList from "./NoteList.svelte";
+    import type { Entry } from "$lib/types";
+    import { markerState } from "../Map/marker.svelte";
 
-  // let cache: {
-  //   [key: number]: {
-  //     notes?: Note[];
-  //     datacenter?: Datacenter;
-  //   };
-  // } = {};
+    interface Props {
+        entries: { [key: string]: Entry };
+        networksDatacenters: { [key: number]: number[] };
+    }
 
-  let notes: Note[] = $state([]);
-  //let datacenter: Datacenter | undefined = $state();
+    let { entries, networksDatacenters }: Props = $props();
 
-  //let loading = $state({ notes: false, datacenter: false });
+    let datacenter_id = $derived(markerState.datacenter?.id);
 
-  // $effect(() => {
-  //
-  //   if (activeId == null) return;
-  //
-  //   if (cache[activeId]?.notes == undefined) {
-  //     notes = [];
-  //
-  //     // loading.notes = true;
-  //
-  //     // fetch(`/api/note?datacenter_id=${activeId}`)
-  //     //     .then((res) => res.json())
-  //     //     .then((data) => {
-  //     //         notes = data.notes;
-  //     //         if (cache[activeId]) cache[activeId].notes = data.notes;
-  //     //         else cache[activeId] = { notes: data.notes };
-  //     //     })
-  //     //     .catch((err) => {
-  //     //         console.error(err);
-  //     //     })
-  //     //     .finally(() => {
-  //     //         loading.notes = false;
-  //     //     });
-  //   } else {
-  //     notes = cache[activeId].notes;
-  //   }
-  //
-  //   if (cache[activeId]?.datacenter == undefined) {
-  //     datacenter = undefined;
-  //
-  //     loading.datacenter = true;
-  //   }
-  // });
+    let ips = $derived.by(() => {
+        if (datacenter_id == undefined || entries == null) return [];
 
-  // function newNoteAdded(note: Note) {
-  //   notes.push(note);
-  // }
+        let ip_list: string[] = [];
+        for (const [ip, entry] of Object.entries(entries)) {
+            const { network_id } = entry;
+            if (network_id == undefined) continue;
+
+            if (networksDatacenters[network_id]?.includes(datacenter_id))
+                ip_list.push(ip);
+        }
+        return ip_list;
+    });
 </script>
 
-<div class="wrapper" class:hidden={markerState.datacenter == null}>
-  {#if markerState.datacenter != null}
+<div
+    class="container"
+    class:hidden={markerState.datacenter == null}
+    class:animated={markerState.datacenter != null}
+>
     <div class="panel">
-      {#if markerState.datacenter.links?.length}
-        <h1>
-          <a
-            href={markerState.datacenter.links[0]}
-            rel="noopener"
-            target="_blank"
-          >
-            {markerState.datacenter.name}
-          </a>
-        </h1>
-      {:else}
-        <h1>{markerState.datacenter.name}</h1>
-      {/if}
-      <p>Lat: {markerState.datacenter.lat}</p>
-      <p>Lon: {markerState.datacenter.lon}</p>
-      <p>City: {markerState.datacenter.city}</p>
-      <p>Exact: {markerState.datacenter.precise}</p>
-      <NoteList {notes} />
+        <button
+            class="close-btn"
+            onclick={() => {
+                markerState.datacenter = null;
+            }}
+            >X
+        </button>
+        {#if markerState.datacenter}
+            {#if markerState.datacenter.links?.length}
+                <h1>
+                    <a
+                        href={markerState.datacenter.links[0]}
+                        rel="noopener"
+                        target="_blank"
+                    >
+                        {markerState.datacenter.name}
+                    </a>
+                </h1>
+            {:else}
+                <h1>{markerState.datacenter.name}</h1>
+            {/if}
+            {#if markerState.datacenter.precise}
+                <div>
+                    <span>Lat: {markerState.datacenter.lat}</span>
+                    <span>Lon: {markerState.datacenter.lon}</span>
+                </div>
+            {/if}
+            <span>City: {markerState.datacenter.city}</span>
+            {#if ips.length > 0}
+                <p>Potentially served:</p>
+                {#each ips as ip}
+                    <span class="indent">{ip}</span>
+                {/each}
+            {/if}
+        {/if}
     </div>
-  {/if}
 </div>
 
 <style>
-  a {
-    color: blue;
-  }
+    a {
+        color: blue;
+    }
 
-  a:visited {
-    color: blue;
-  }
+    a:visited {
+        color: blue;
+    }
 
-  .wrapper {
-    transition: width 1s cubic-bezier(0.25, 0.1, 0.25, 1);
-    position: absolute;
-    right: 3em;
-    top: 2em;
-    bottom: 2em;
-    overflow: hidden;
-    z-index: 11;
-    width: 350px;
-  }
+    .animated {
+        transition: width 1s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
 
-  .panel {
-    background-color: white;
-    padding: 1.5em;
-    height: 100%;
-    width: calc(350px - 2 * 1.5em);
-    overflow-y: scroll;
-  }
+    .container {
+        position: absolute;
+        right: 3em;
+        top: 50%;
+        transform: translate(0, -50%);
+        z-index: 11;
+        width: 350px;
+        overflow: hidden;
+    }
 
-  .hidden {
-    width: 0px;
-  }
+    .panel {
+        background-color: #e7e7e7;
+        padding: 1.5em;
+        height: 100%;
+        width: calc(350px - 2 * 1.5em);
+        overflow-y: scroll;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    .hidden {
+        width: 0px;
+    }
+
+    .indent {
+        padding-left: 1em;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 0;
+        right: 0;
+        border: none;
+        padding: 1em;
+        cursor: pointer;
+    }
 </style>
