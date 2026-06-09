@@ -93,6 +93,9 @@
                                     <tr>
                                         <td><span>({entry.count})</span></td>
                                         <td><span>{entry.hostname}</span></td>
+                                        <td>
+                                            <span>[{entry.durationMs}ms]</span>
+                                        </td>
                                     </tr>
                                 {/each}
                             </tbody>

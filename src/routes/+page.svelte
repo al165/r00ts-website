@@ -1,6 +1,7 @@
 <script lang="ts">
     import DataPanel from "$lib/components/InfoPanels/DataPanel.svelte";
     import IpPanel from "$lib/components/InfoPanels/IpPanel.svelte";
+    import SummaryPanel from "$lib/components/InfoPanels/SummaryPanel.svelte";
     import Map from "$lib/components/Map/Map.svelte";
 
     const { data } = $props();
@@ -15,6 +16,10 @@
                 networks={data.networks}
                 networksDatacenters={data.networksDatacenters}
                 pageUrl={data.pageUrl}
+            />
+            <SummaryPanel
+                entries={data.ipData}
+                datacenters={data.datacenters}
             />
         {/if}
     </Map>

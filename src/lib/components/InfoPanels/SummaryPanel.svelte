@@ -1,0 +1,103 @@
+<script lang="ts">
+    import type { Datacenter, Entry } from "$lib/types";
+
+    interface Props {
+        entries: { [key: string]: Entry };
+        datacenters: Datacenter[];
+    }
+
+    let { entries, datacenters }: Props = $props();
+
+    let num_ips = $derived(Object.keys(entries).length);
+    let num_datacenters = $derived(datacenters.length);
+    let cities = $derived.by(() => {
+        const names = Array.from(new Set(datacenters.map((dc) => dc.city)));
+
+        if (names.length == 1) return names[0];
+
+        let list = names.slice(0, -1).join(", ");
+        list = `${list} and ${names.at(-1)}`;
+
+        return list;
+    });
+
+    let time = $derived(
+        Object.values(entries).reduce((p, e) => {
+            return Math.max(e.durationMs ?? 0, p);
+        }, 0),
+    );
+
+    // VERY rough upper-bound estimate of distance to server:
+    //   c = 200 km/ms (light in fibre optic)
+    //   t (time in ms of request TTFB)
+    //   d = (t/2) * c / 2 / 2
+    //          ^        ^   ^-- new TLS handshake takes back-and-forth
+    //          |        '------ server overhead roughly doubles TTFB
+    //          '--------------- there and back again
+    // still useful for estimating continent hops
+    const c = 200;
+    let distance = $derived(((time / 2) * c) / 2 / 2);
+</script>
+
+<div class="container">
+    <span>Your session was served by:</span>
+    <ul>
+        <li>
+            <span class="ip-stat">
+                {num_ips} IP {num_ips > 1 ? "addresses" : "address"}
+            </span>
+        </li>
+        <li>
+            On up to
+            <span class="datacenter-stat">
+                {num_datacenters} datacenters
+            </span>
+        </li>
+        <li>Accross <span class="cities-stat"> {cities} </span></li>
+        <li>
+            With the longest connection taking at best <span class="time-stat"
+                >{time} milliseconds</span
+            >
+        </li>
+        {#if time < 500}
+            <li>
+                Which roughly means <span class="distance-stat">
+                    within a {distance}km radius
+                </span> of your location
+            </li>
+        {/if}
+    </ul>
+</div>
+
+<style>
+    .container {
+        position: absolute;
+        bottom: 2em;
+        left: 1em;
+        max-width: 30em;
+        background: #e7e7e7;
+        display: flex;
+        flex-direction: column;
+        z-index: 10;
+    }
+
+    .ip-stat {
+        background: yellow;
+    }
+
+    .datacenter-stat {
+        background: cyan;
+    }
+
+    .cities-stat {
+        background: #8ff0a4;
+    }
+
+    .time-stat {
+        background: #ff5f1f;
+    }
+
+    .distance-stat {
+        background: #ff70b3;
+    }
+</style>
