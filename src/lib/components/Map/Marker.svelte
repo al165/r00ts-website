@@ -15,6 +15,7 @@
     } = $props();
 
     let zoomed = $derived(zoom < 13);
+    let no_preview = $derived(zoom < 5);
     let open = $derived(markerState.datacenter?.id == datacenter.id);
     let highlighted = $derived(
         markerState.highlighted.includes(datacenter.id) ||
@@ -44,13 +45,13 @@
                 {/if}
             </div>
         {/if}
-        {#if datacenter.filename && datacenter.precise}
+        {#if datacenter.filename && datacenter.precise && !no_preview}
             <img
                 class="aerial"
                 src="/images/aerial/{datacenter.filename}"
                 alt="Aerial view of {datacenter.name}"
             />
-        {:else if open && !datacenter.precise && !zoomed}
+        {:else if open && !datacenter.precise && !zoomed && !no_preview}
             <div class="caption">
                 <span>
                     Exact location unknown! All we know is that it is in <em

@@ -30,8 +30,9 @@ export async function load({ url }) {
         } catch (err) {
             console.error(err);
         }
-    } else
+    } else {
         datacenters = getAllDatacenters();
+    }
 
     const weatherResults: { [key: number]: Weather } = {};
     // Get weather info
