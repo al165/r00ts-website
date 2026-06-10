@@ -1,5 +1,6 @@
 <script lang="ts">
     import { NoteType } from "$lib/types";
+    import { base } from "$app/paths";
 
     let { id, newNoteAdded } = $props();
     let adding = $state(false);
@@ -42,7 +43,7 @@
                   : NoteType.Image;
 
         try {
-            const res = await fetch(`${import.meta.env.BASE_URL}api/note`, {
+            const res = await fetch(`${base}/api/note`, {
                 method: "POST",
                 body: JSON.stringify({
                     datacenter_id: id,

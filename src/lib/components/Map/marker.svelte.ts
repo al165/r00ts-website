@@ -1,4 +1,5 @@
 import { mount } from "svelte";
+import { base } from "$app/paths";
 
 import maplibregl from "maplibre-gl";
 
@@ -32,7 +33,7 @@ export function addMarker(
         markerState.datacenter = datacenter;
 
         if (datacenterData.filename == null && datacenterData.precise) {
-            fetch(`${import.meta.env.BASE_URL}api/aerial/${datacenter.id}`)
+            fetch(`${base}/api/aerial/${datacenter.id}`)
                 .then(res => res.json())
                 .then(data => {
                     datacenterData.filename = data.filename;

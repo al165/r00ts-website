@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { base } from '$app/paths';
     import type { Datacenter, Weather } from "$lib/types";
     import { markerState } from "./marker.svelte";
 
@@ -48,8 +49,7 @@
         {#if datacenter.filename && datacenter.precise && !no_preview}
             <img
                 class="aerial"
-                src="{import.meta.env
-                    .BASE_URL}images/aerial/{datacenter.filename}"
+                src="{base}/images/aerial/{datacenter.filename}"
                 alt="Aerial view of {datacenter.name}"
             />
         {:else if open && !datacenter.precise && !zoomed && !no_preview}
