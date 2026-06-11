@@ -1,6 +1,6 @@
 <script lang="ts">
     import { NoteType } from "$lib/types";
-    import { base } from "$app/paths";
+    import { resolve } from "$app/paths";
 
     let { id, newNoteAdded } = $props();
     let adding = $state(false);
@@ -13,6 +13,8 @@
         else if (noteType === "image") return url.length > 0;
         return false;
     });
+
+    const post_url = resolve("/api/note");
 
     function toggleForm(e: MouseEvent) {
         e.preventDefault();
@@ -43,7 +45,7 @@
                   : NoteType.Image;
 
         try {
-            const res = await fetch(`${base}/api/note`, {
+            const res = await fetch(post_url, {
                 method: "POST",
                 body: JSON.stringify({
                     datacenter_id: id,

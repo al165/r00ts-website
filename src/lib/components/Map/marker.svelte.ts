@@ -1,11 +1,12 @@
 import { mount } from "svelte";
-import { base } from "$app/paths";
+import { resolve } from "$app/paths";
 
 import maplibregl from "maplibre-gl";
 
 import type { Datacenter, Weather } from "$lib/types";
 import Marker from "./Marker.svelte";
 
+const base = resolve('/api/aerial/');
 
 export const markerState = $state({
     datacenter: null as Datacenter | null,
@@ -33,7 +34,7 @@ export function addMarker(
         markerState.datacenter = datacenter;
 
         if (datacenterData.filename == null && datacenterData.precise) {
-            fetch(`${base}/api/aerial/${datacenter.id}`)
+            fetch(`${base}${datacenter.id}`)
                 .then(res => res.json())
                 .then(data => {
                     datacenterData.filename = data.filename;

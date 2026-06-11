@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { base } from '$app/paths';
+    import { resolve } from "$app/paths";
     import type { Datacenter, Weather } from "$lib/types";
     import { markerState } from "./marker.svelte";
 
@@ -22,6 +22,8 @@
         markerState.highlighted.includes(datacenter.id) ||
             markerState.preview.includes(datacenter.id),
     );
+
+    const aerial_url = resolve("/images/aerial/");
 </script>
 
 <!-- class:marker-open={open && !zoomed} -->
@@ -49,7 +51,7 @@
         {#if datacenter.filename && datacenter.precise && !no_preview}
             <img
                 class="aerial"
-                src="{base}/images/aerial/{datacenter.filename}"
+                src="{aerial_url}{datacenter.filename}"
                 alt="Aerial view of {datacenter.name}"
             />
         {:else if open && !datacenter.precise && !zoomed && !no_preview}
