@@ -1,5 +1,5 @@
 import { getAllDatacenters, getDatacentersFromIds, getNetworksFromIds } from "$lib/server/database.js";
-import type { Datacenter, Network, Weather } from "$lib/types";
+import type { Datacenter, Network } from "$lib/types";
 
 export async function load({ url }) {
     const showDebug: boolean = url.searchParams.get('debug') ? true : false;
@@ -15,7 +15,10 @@ export async function load({ url }) {
     if (data64) {
         try {
             data = JSON.parse(atob(data64));
-            console.log(data);
+
+            if (!data.hasOwnProperty('facility_ids'))
+                throw new Error('`data` does not contain facility_ids');
+
             datacenters = getDatacentersFromIds(data['facility_ids']);
 
             const network_list = getNetworksFromIds(data['network_ids']);

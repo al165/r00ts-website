@@ -164,6 +164,8 @@ export class RasteriserPalette {
 
     private glyphSize: number = 10;
 
+    private glyphCache: Map<number, OffscreenCanvas> = new Map();
+
     constructor(glyphPaletteCanvas?: HTMLCanvasElement | OffscreenCanvas, glyphSize = 10) {
         if (glyphPaletteCanvas === undefined)
             this.glyphPaletteCanvas = new OffscreenCanvas(this.glyphSize, this.glyphSize);
@@ -193,6 +195,10 @@ export class RasteriserPalette {
         if (this.palette.length == 0)
             return null;
 
+        const colourKey = (colour[0] & 0xF0) << 4 | (colour[1] & 0xF0) | (colour[2] >> 4);
+        if (this.glyphCache.has(colourKey))
+            return this.glyphCache.get(colourKey) as OffscreenCanvas;
+
         let best = this.palette[0];
         let bestDist = Infinity;
 
@@ -204,8 +210,10 @@ export class RasteriserPalette {
             }
         }
 
-        if (best.canvas)
+        if (best.canvas) {
+            this.glyphCache.set(colourKey, best.canvas);
             return best.canvas;
+        }
 
         return null;
     }
@@ -274,11 +282,16 @@ export class MapRaseriser {
             this.offscreenCanvas = offscreenCanvas;
 
         this.glyphOverlayCtx = this.glyphOverlayCanvas.getContext('2d');
+        if (this.glyphOverlayCtx)
+            this.glyphOverlayCtx.imageSmoothingEnabled = false;
 
         if (this.offscreenCanvas instanceof OffscreenCanvas)
             this.offscreenCtx = this.offscreenCanvas.getContext('2d');
         else
             this.offscreenCtx = this.offscreenCanvas.getContext('2d');
+
+        if (this.offscreenCtx)
+            this.offscreenCtx.imageSmoothingEnabled = false;
 
         this.rasterPalette = new RasteriserPalette(glyphPaletteCanvas, this.glyphSize);
 
@@ -306,30 +319,21 @@ export class MapRaseriser {
     renderGlyphs() {
         if (this.offscreenCtx == null || this.glyphOverlayCtx == null) return;
 
-        // Clear glyph layer
-        this.glyphOverlayCtx.clearRect(
-            0,
-            0,
-            this.glyphOverlayCanvas.width,
-            this.glyphOverlayCanvas.height,
-        );
-
-        // Downsample map canvas
         this.offscreenCtx.drawImage(this.mapCanvas, 0, 0, this.cols, this.rows);
         const { data } = this.offscreenCtx.getImageData(0, 0, this.cols, this.rows);
+        const pixels = new Uint32Array(data.buffer);
+        for (let i = 0, len = pixels.length; i < len; i++) {
+            const px = pixels[i]; // one read instead of three
+            const r = px & 0xFF;
+            const g = (px >> 8) & 0xFF;
+            const b = (px >> 16) & 0xFF;
+            const col = i / this.cols;
+            const row = i % this.cols;
 
-        for (let row = 0; row < this.rows; row++) {
-            for (let col = 0; col < this.cols; col++) {
-                const i = (row * this.cols + col) * 4;
-                const x = col * this.glyphSize;
-                const y = row * this.glyphSize;
+            const glyph = this.rasterPalette.glyphForColour([r, g, b]);
 
-                const glyph = this.rasterPalette.glyphForColour([data[i], data[i + 1], data[i + 2]]);
-
-                if (glyph) this.glyphOverlayCtx.drawImage(glyph, x, y);
-            }
+            if (glyph) this.glyphOverlayCtx.drawImage(glyph, row * this.glyphSize, col * this.glyphSize);
         }
-
     }
 
     setGlyphSize(newSize: number) {
