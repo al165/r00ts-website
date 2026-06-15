@@ -3,7 +3,7 @@ import { mount, unmount } from "svelte";
 import LocationMarker from "./LocationMarker.svelte";
 
 let watchId: number;
-let locationMarker: maplibregl.Marker;
+let locationMarker: maplibregl.Marker | null = null;
 let component: { $set?: any, $get?: any };
 
 export let showLocation = $state({ value: false });
@@ -55,6 +55,7 @@ export function getUserLocation(map: maplibregl.Map) {
         );
     } else {
         locationMarker?.remove();
+        locationMarker = null;
 
         if (watchId != undefined)
             window.navigator.geolocation.clearWatch(watchId);
