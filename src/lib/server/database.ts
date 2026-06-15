@@ -422,8 +422,10 @@ export async function getDatacenters(asn: number, country_code?: string, city?: 
 }
 
 export function getNetworksFromIds(ids: number[]) {
-    const placeholder = ids.map(_ => "?").join(',');
+    if (!ids || ids == undefined || !ids.length)
+        return [];
 
+    const placeholder = ids.map(_ => "?").join(',');
     return db.prepare(`SELECT * FROM Networks WHERE id IN (${placeholder})`).all(ids) as Network[];
 }
 

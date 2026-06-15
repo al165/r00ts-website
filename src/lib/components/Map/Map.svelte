@@ -12,7 +12,13 @@
     import { MapRaseriser } from "./glyphRenderer.ts";
     import { addMarker, markerState } from "./marker.svelte.ts";
     import DebugPanel from "./DebugPanel.svelte";
-    import type { Datacenter, Weather } from "$lib/types";
+    import type { Datacenter } from "$lib/types";
+
+    import {
+        destroyLocationMarker,
+        getUserLocation,
+        showLocation,
+    } from "./locationMarker.svelte.ts";
 
     let mapContainer: HTMLDivElement;
     let mapBuildingsContainer: HTMLDivElement;
@@ -30,7 +36,6 @@
         center?: [number, number];
         geoJSON?: any;
         datacenters?: Datacenter[];
-        weatherData?: { [key: number]: Weather };
         glyphSize?: number;
         showDebug?: boolean;
         children?: any;
@@ -41,7 +46,6 @@
         zoom = 2,
         center = [0, 0],
         datacenters,
-        weatherData = {},
         glyphSize = 10,
         showDebug = false,
         leftPadding = 100,
@@ -195,12 +199,13 @@
     });
 
     onDestroy(() => {
+        destroyLocationMarker();
         for (const { marker, component } of datacenterMarkers) {
             marker.remove();
             unmount(component);
         }
         map?.remove();
-        mapBuildingsContainer?.remove();
+        mapBuildingsLayer?.remove();
     });
 </script>
 
@@ -223,6 +228,14 @@
         <DebugPanel {rasteriser} {mapBuildingsStyle} {setBuildingStyle} />
     {/if}
     <button class="fit-btn" onclick={() => fitAll(true)}>fit all</button>
+
+    {#if "geolocation" in navigator}
+        <button
+            class="locate-btn"
+            class:locating={showLocation.value}
+            onclick={() => getUserLocation(map)}>locate</button
+        >
+    {/if}
     {@render children?.()}
 </div>
 
@@ -249,15 +262,28 @@
         pointer-events: none;
     }
 
+    .locate-btn,
     .fit-btn {
         position: absolute;
-        top: 1em;
-        right: 1em;
         border: none;
         cursor: pointer;
         font-family: "JetBrains Mono", monospace;
         font-weight: 600;
         font-size: 16pt;
         z-index: 3;
+    }
+
+    .fit-btn {
+        top: 1em;
+        right: 1em;
+    }
+
+    .locate-btn {
+        bottom: 1em;
+        right: 1em;
+    }
+
+    .locating {
+        color: #ff5f1f;
     }
 </style>
