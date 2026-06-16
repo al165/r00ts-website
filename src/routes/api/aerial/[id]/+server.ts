@@ -14,7 +14,7 @@ export async function GET({ params }) {
 
     const result = await getDatacenterAerialImage(parseInt(id));
 
-    if (result != null)
+    if (result)
         return json({ filename: result });
     else
         return error(400);
