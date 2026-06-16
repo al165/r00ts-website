@@ -17,12 +17,18 @@ function success(map: maplibregl.Map, position: GeolocationPosition) {
 
         locationMarker = new maplibregl.Marker({
             element: locationMarkerEl,
+            draggable: true,
         })
             .setLngLat([
                 position.coords.longitude,
                 position.coords.latitude,
             ])
             .addTo(map);
+
+        locationMarker.once('dragstart', () => {
+            // stop updating location
+            window.navigator.geolocation.clearWatch(watchId);
+        });
 
         map.flyTo({
             center: locationMarker.getLngLat(),
@@ -49,9 +55,7 @@ export function getUserLocation(map: maplibregl.Map) {
         watchId = window.navigator.geolocation.watchPosition(
             (position) => success(map, position),
             error,
-            {
-                enableHighAccuracy: true,
-            },
+            { enableHighAccuracy: true },
         );
     } else {
         locationMarker?.remove();
