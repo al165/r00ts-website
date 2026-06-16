@@ -7,7 +7,7 @@ import { isIpReserved, IPtoInt } from '$lib/server/ip_utils.js';
 
 export async function GET({ params, url, getClientAddress }) {
     const { ip } = params;
-    let country_code = url.searchParams.get('country_code');
+    let country_code = url.searchParams.get('country_code') ?? undefined;
     let city = url.searchParams.get('city') ?? undefined;
 
     console.log(`[GET] /api/ip/${ip} country_code: ${country_code} city: ${city}`);
@@ -35,14 +35,20 @@ export async function GET({ params, url, getClientAddress }) {
     let user;
     if (!country_code) {
         const userIP = getClientAddress();
-        const data = await fetch(`http://ip-api.com/json/${userIP}`).then(res => res.json()).catch(err => console.log(err));
 
-        if (data.status === 'fail') {
-            console.log("WARNING: setting default country_code to 'nl'");
-            console.log(data);
+        if (import.meta.env.DEV) {
             country_code = 'nl';
-        } else
-            country_code = data.countryCode as string;
+            console.log('In DEV mode');
+        } else if (!userIP.includes('127.0.0.1')) {
+            const data = await fetch(`http://ip-api.com/json/${userIP}`).then(res => res.json()).catch(err => console.log(err));
+
+            if (data.status === 'fail') {
+                console.log("WARNING: country_code could not be resolved");
+                console.log(data);
+            } else
+                country_code = data.countryCode as string;
+
+        }
 
         console.log(`Setting user country_code to ${country_code}`);
         user = { country_code };

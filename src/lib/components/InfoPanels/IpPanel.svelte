@@ -31,8 +31,6 @@
 
     const networkIps: { [key: number]: Entry[] } = $derived.by(() => {
         const result: { [key: number]: Entry[] } = {};
-        console.log("Entries:");
-        console.log(entries);
 
         for (const ip of Object.keys(entries)) {
             const entry = entries[ip];
@@ -48,9 +46,6 @@
                 return a.ip < b.ip ? -1 : 1;
             });
         }
-
-        console.log("Result:");
-        console.log(result);
 
         return result;
     });
