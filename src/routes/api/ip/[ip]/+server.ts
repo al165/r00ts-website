@@ -39,10 +39,12 @@ export async function GET({ params, url, getClientAddress }) {
 
         if (data.status === 'fail') {
             console.log("WARNING: setting default country_code to 'nl'");
+            console.log(data);
             country_code = 'nl';
         } else
             country_code = data.countryCode as string;
 
+        console.log(`Setting user country_code to ${country_code}`);
         user = { country_code };
     }
 
