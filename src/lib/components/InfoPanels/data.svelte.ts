@@ -4,7 +4,7 @@ export const dataState: {
     networks?: { [key: number]: Network },
     networksDatacenters?: any,
     entries: { [key: string]: Entry };
-} = $state({
+} = $state.raw({
     networks: {},
     networksDatacenters: {},
     entries: {}

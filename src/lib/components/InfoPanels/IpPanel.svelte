@@ -1,44 +1,49 @@
 <script lang="ts">
-    import type { Entry, Network } from "$lib/types";
+    import type { Entry } from "$lib/types";
 
     import { markerState } from "../Map/marker.svelte";
+    import { dataState } from "$lib/components/InfoPanels/data.svelte.js";
+
     import IpDetailsPanel from "./IpDetailsPanel.svelte";
 
     interface Props {
-        entries: { [key: string]: Entry };
-        networks: { [key: number]: Network };
-        networksDatacenters: { [key: number]: number[] };
         pageUrl?: string;
     }
 
-    let { entries, networks, networksDatacenters, pageUrl }: Props = $props();
+    let { pageUrl }: Props = $props();
     let selectedNetId: number | null = $state(null);
 
     function preview(netId: number | null) {
-        if (netId == null || !networksDatacenters[netId])
+        if (netId == null || !dataState.networksDatacenters[netId])
             markerState.preview = [];
-        else markerState.preview = networksDatacenters[netId];
+        else markerState.preview = dataState.networksDatacenters[netId];
     }
 
     $effect(() => {
-        if (selectedNetId == null || !networksDatacenters[selectedNetId]) {
+        if (
+            selectedNetId == null ||
+            !dataState.networksDatacenters[selectedNetId]
+        ) {
             markerState.highlighted = [];
             return;
         }
 
-        markerState.highlighted = networksDatacenters[selectedNetId];
+        markerState.highlighted = dataState.networksDatacenters[selectedNetId];
     });
 
     const networkIps: { [key: number]: Entry[] } = $derived.by(() => {
         const result: { [key: number]: Entry[] } = {};
+        $inspect(dataState.entries);
 
-        for (const ip of Object.keys(entries)) {
-            const entry = entries[ip];
+        for (const ip of Object.keys(dataState.entries)) {
+            const entry = dataState.entries[ip];
             if (!entry.network_id) continue;
+
+            console.log(entry);
 
             if (!result[entry.network_id]) result[entry.network_id] = [];
 
-            result[entry.network_id].push(entries[ip]);
+            result[entry.network_id].push(dataState.entries[ip]);
         }
 
         for (const net_id of Object.keys(result)) {
@@ -46,6 +51,8 @@
                 return a.ip < b.ip ? -1 : 1;
             });
         }
+
+        $inspect(result);
 
         return result;
     });
@@ -82,9 +89,11 @@
                 onkeydown={() => {}}
             >
                 <span class="net-name">
-                    {networks[netId].network_name}
-                    {#if !networksDatacenters[netId]}
-                        [!]
+                    {#if dataState.networks}
+                        {dataState.networks[netId].network_name}
+                        {#if !dataState.networksDatacenters[netId]}
+                            [!]
+                        {/if}
                     {/if}
                 </span>
                 {#each networkIps[netId] as entry}
@@ -93,7 +102,12 @@
             </div>
         {/each}
     </div>
-    <IpDetailsPanel {networks} {networkIps} {selectedNetId} {entryElement} />
+    <IpDetailsPanel
+        networks={dataState.networks}
+        {networkIps}
+        {selectedNetId}
+        {entryElement}
+    />
 </div>
 
 <style>

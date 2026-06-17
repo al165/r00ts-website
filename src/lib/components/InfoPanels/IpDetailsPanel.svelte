@@ -3,7 +3,7 @@
 
     interface Props {
         entryElement: HTMLDivElement | null;
-        networks: { [key: number]: Network };
+        networks?: { [key: number]: Network };
         networkIps: { [key: number]: Entry[] };
         selectedNetId: number | null;
     }
@@ -16,7 +16,9 @@
 <div class="entry-info" style:top>
     <div class="entry-data">
         {#if selectedNetId != null}
-            <span>{networks[selectedNetId]?.organisation_name}</span>
+            {#if networks}
+                <span>{networks[selectedNetId]?.organisation_name}</span>
+            {/if}
             <table>
                 <tbody>
                     {#each networkIps[selectedNetId] as entry}

@@ -7,7 +7,7 @@ export async function load({ url }) {
 
     let datacenters: Datacenter[] = [];
     let data;
-    let ipData = null;
+    let entries = null;
     let pageUrl: string | undefined;
     let networks: { [key: number]: Network } = {};
     let networksDatacenters = null;
@@ -24,7 +24,7 @@ export async function load({ url }) {
             const network_list = getNetworksFromIds(data['network_ids']);
             network_list.map(net => networks[net.id] = net);
             networksDatacenters = data['network_datacenters'];
-            ipData = data['entries'];
+            entries = data['entries'];
             pageUrl = data['pageUrl'];
 
         } catch (err) {
@@ -34,5 +34,5 @@ export async function load({ url }) {
         datacenters = getAllDatacenters();
     }
 
-    return { datacenters, showDebug, ipData, networks, networksDatacenters, pageUrl };
+    return { datacenters, showDebug, entries, networks, networksDatacenters, pageUrl };
 }

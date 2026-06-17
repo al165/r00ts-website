@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { untrack } from "svelte";
+
     import IpPanel from "$lib/components/InfoPanels/IpPanel.svelte";
     import SummaryPanel from "$lib/components/InfoPanels/SummaryPanel.svelte";
     import Map from "$lib/components/Map/Map.svelte";
@@ -7,10 +9,10 @@
 
     const { data } = $props();
 
-    $effect(() => {
+    untrack(() => {
         dataState.networks = data.networks;
         dataState.networksDatacenters = data.networksDatacenters;
-        dataState.entries = data.ipData;
+        dataState.entries = data.entries;
     });
 </script>
 
@@ -18,17 +20,12 @@
     <Map
         datacenters={data.datacenters}
         showDebug={data.showDebug}
-        leftPadding={data.ipData ? 500 : 100}
+        leftPadding={data.entries ? 500 : 100}
     >
-        {#if data.ipData}
-            <IpPanel
-                entries={data.ipData}
-                networks={data.networks}
-                networksDatacenters={data.networksDatacenters}
-                pageUrl={data.pageUrl}
-            />
+        {#if data.entries}
+            <IpPanel pageUrl={data.pageUrl} />
             <SummaryPanel
-                entries={data.ipData}
+                entries={data.entries}
                 datacenters={data.datacenters}
                 pageUrl={data.pageUrl}
             />
