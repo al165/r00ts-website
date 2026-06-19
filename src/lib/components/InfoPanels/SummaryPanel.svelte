@@ -42,7 +42,9 @@
 </script>
 
 <div class="container">
-    <span>{pageUrl ?? "The website"} was served by:</span>
+    <span>
+        your session on <em>{pageUrl ?? "the website"}</em> was served by:
+    </span>
     <ul>
         {#if num_ips > 0}
             <li>

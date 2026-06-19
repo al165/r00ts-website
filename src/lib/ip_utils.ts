@@ -1,13 +1,29 @@
-import { isIP, isIPv6 } from 'net';
+export function isIPv4(ip: string) {
+    // Probably misses some edge cases!
+
+    if (ip.includes(':'))
+        return false;
+
+    const octets = ip.split('.');
+    if (octets.length != 4)
+        return false;
+
+    for (const octet of octets) {
+        const octValue = parseInt(octet);
+
+        if (isNaN(octValue))
+            return false;
+
+        if (octValue < 0 || octValue > 255)
+            return false;
+    }
+
+    return true;
+}
 
 export function IPtoInt(ip: string) {
-    if (!ip || isIP(ip) == 0)
+    if (!ip || !isIPv4(ip))
         return -1;
-
-    if (isIPv6(ip)) {
-        console.warn(`IPv6 not supported. ${ip}`);
-        return -1;
-    }
 
     const [octet1, octet2, octet3, octet4] = ip.split('.');
     return (((parseInt(octet1) << 24) >>> 0) | (parseInt(octet2) << 16) | (parseInt(octet3) << 8) | parseInt(octet4)) >>> 0;
@@ -33,7 +49,8 @@ export function cidrToRange(cidr: string) {
     const ipInt = ip.split('.')
         .reduce((acc, octet) => (acc << 8) | parseInt(octet, 10), 0) >>> 0;
     // >>> 0 converts to unsigned 32-bit, important for IPs starting with 128+
-    // Build the network mask, e.g. prefix=24 → 0xFFFFFF00
+
+    // Build the network mask, e.g. prefix=24 -> 0xFFFFFF00
     const mask = prefix === 0 ? 0 : (~0 << (32 - prefix)) >>> 0;
 
     const start = (ipInt & mask) >>> 0;
@@ -62,4 +79,17 @@ export function isIpReserved(ip_int: number) {
     }
 
     return false;
+}
+
+export function sortIps(ips: string[]) {
+    return ips.sort(ipCompareFn);
+}
+
+export function ipCompareFn(a: string, b: string) {
+    return IPtoInt(a) < IPtoInt(b) ? -1 : 1;
+}
+
+export function padIp(ip: string) {
+    const [octet1, octet2, octet3, octet4] = ip.split('.');
+    return `${octet1.padStart(3, ' ')}.${octet2.padStart(3, ' ')}.${octet3.padStart(3, ' ')}.${octet4.padStart(3, ' ')}`;
 }

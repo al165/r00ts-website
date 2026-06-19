@@ -24,7 +24,7 @@
         leftPadding={data.entries ? 500 : 100}
     >
         {#if data.entries}
-            <IpPanel pageUrl={data.pageUrl} />
+            <IpPanel />
             <SummaryPanel
                 entries={data.entries}
                 datacenters={data.datacenters}

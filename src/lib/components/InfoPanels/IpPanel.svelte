@@ -3,14 +3,10 @@
 
     import { markerState } from "../Map/marker.svelte";
     import { dataState } from "$lib/components/InfoPanels/data.svelte.js";
+    import { ipCompareFn, padIp } from "$lib/ip_utils";
 
     import IpDetailsPanel from "./IpDetailsPanel.svelte";
 
-    interface Props {
-        pageUrl?: string;
-    }
-
-    let { pageUrl }: Props = $props();
     let selectedNetId: number | null = $state(null);
 
     function preview(netId: number | null) {
@@ -38,18 +34,13 @@
             const entry = dataState.entries[ip];
             if (!entry.network_id) continue;
 
-            console.log(entry);
-
             if (!result[entry.network_id]) result[entry.network_id] = [];
 
             result[entry.network_id].push(dataState.entries[ip]);
         }
 
-        for (const net_id of Object.keys(result)) {
-            result[parseInt(net_id)].sort((a, b) => {
-                return a.ip < b.ip ? -1 : 1;
-            });
-        }
+        for (const net_id of Object.keys(result))
+            result[parseInt(net_id)].sort((a, b) => ipCompareFn(a.ip, b.ip));
 
         return result;
     });
@@ -59,7 +50,7 @@
 
 <div class="wrapper">
     <div class="container">
-        <span>[ {pageUrl ?? "unknown"} ]</span>
+        <!-- <span>[ {pageUrl ?? "unknown"} ]</span> -->
         {#each Object.keys(networkIps).map((k) => parseInt(k)) as netId}
             <div
                 class="entry"
@@ -87,24 +78,20 @@
             >
                 <span class="net-name">
                     {#if dataState.networks}
-                        {dataState.networks[netId].network_name}
+                        {dataState.networks[netId]?.organisation_name}
+                        <!-- {dataState.networks[netId].network_name} -->
                         {#if !dataState.networksDatacenters[netId]}
                             [!]
                         {/if}
                     {/if}
                 </span>
                 {#each networkIps[netId] as entry}
-                    <span class="ip">{entry.ip}</span>
+                    <span class="ip">{padIp(entry.ip)}</span>
                 {/each}
             </div>
         {/each}
     </div>
-    <IpDetailsPanel
-        networks={dataState.networks}
-        {networkIps}
-        {selectedNetId}
-        {entryElement}
-    />
+    <IpDetailsPanel {networkIps} {selectedNetId} {entryElement} />
 </div>
 
 <style>
@@ -129,6 +116,7 @@
 
     .ip {
         padding-left: 2em;
+        text-align: right;
     }
 
     .entry {

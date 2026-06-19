@@ -1,14 +1,13 @@
 <script lang="ts">
-    import type { Entry, Network } from "$lib/types";
+    import type { Entry } from "$lib/types";
 
     interface Props {
         entryElement: HTMLDivElement | null;
-        networks?: { [key: number]: Network };
         networkIps: { [key: number]: Entry[] };
         selectedNetId: number | null;
     }
 
-    let { networks, selectedNetId, networkIps, entryElement }: Props = $props();
+    let { selectedNetId, networkIps, entryElement }: Props = $props();
 
     let top = $derived(entryElement ? `${entryElement.offsetTop}px` : "-10px");
 </script>
@@ -16,9 +15,6 @@
 <div class="entry-info" style:top>
     <div class="entry-data">
         {#if selectedNetId != null}
-            {#if networks}
-                <span>{networks[selectedNetId]?.organisation_name}</span>
-            {/if}
             <table>
                 <tbody>
                     {#each networkIps[selectedNetId] as entry}
@@ -26,7 +22,9 @@
                             <td><span>({entry.count})</span></td>
                             <td><span>{entry.hostname}</span></td>
                             <td>
-                                <span>[{entry.durationMs}ms]</span>
+                                {#if entry.durationMs}
+                                    <span>[{entry.durationMs}ms]</span>
+                                {/if}
                             </td>
                             <td>
                                 {#if entry.clue?.city}

@@ -19,7 +19,7 @@ const db = new Database('r00ts.db');
 db.pragma('journal_mode = WAL');
 
 import { findMigrationFilenames, readMigrationFile } from 'migration-files'
-import { intToIP, IPtoInt } from './ip_utils';
+import { intToIP, IPtoInt } from '$lib/ip_utils';
 import { getFacilitiesFromASN, getPeeringDBNetwork } from './peeringdb';
 import { fetchSatilliteView } from './mapbox_fetch';
 
