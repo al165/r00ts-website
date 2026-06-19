@@ -1,9 +1,7 @@
 import { json, error } from '@sveltejs/kit';
 
-import { isIP, isIPv6 } from 'net';
-
 import { getNetwork } from '$lib/server/database';
-import { isIpReserved, IPtoInt } from '$lib/server/ip_utils.js';
+import { isIpReserved, IPtoInt, isIPv4 } from '$lib/ip_utils.js';
 
 export async function GET({ params }) {
 
@@ -12,11 +10,8 @@ export async function GET({ params }) {
     if (!ip)
         error(400, 'Missing IP address');
 
-    if (isIP(ip) == 0)
-        error(400, 'IP is not valid');
-
-    if (isIPv6(ip))
-        error(400, 'IPv6 is not supported');
+    if (!isIPv4(ip))
+        error(400, 'IP is not valid IPv4');
 
     const ip_int = IPtoInt(ip);
     if (isIpReserved(ip_int))
