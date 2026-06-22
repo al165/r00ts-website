@@ -30,6 +30,14 @@
                 datacenters={data.datacenters}
                 pageUrl={data.pageUrl}
             />
+        {:else}
+            <a
+                href="https://github.com/al165/r00ts-extension/releases/tag/v0.5"
+            >
+                <button id="download-btn">
+                    Download the extension (Firefox and Chrome!)
+                </button>
+            </a>
         {/if}
         <AboutPanel />
     </Map>
@@ -41,5 +49,18 @@
         height: 100vh;
         width: 100vw;
         box-sizing: border-box;
+    }
+
+    #download-btn {
+        position: absolute;
+        bottom: 2em;
+        left: 2em;
+        z-index: 12;
+        padding: 1em 2em;
+        font-family: inherit;
+        font-size: 12pt;
+        background: #ff70b3;
+        border: none;
+        cursor: pointer;
     }
 </style>
