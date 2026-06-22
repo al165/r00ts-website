@@ -75,7 +75,7 @@
     .marker {
         max-height: 350px;
         max-width: 350px;
-        background: #ff5f1f;
+        background: #ff70b3;
         padding: 0.8em;
         transition-property: max-width, max-height, min-width !important;
         transition-duration: 1s !important;
@@ -100,6 +100,7 @@
     }
 
     .marker-small {
+        padding: 0.6em;
         max-width: 50px;
         max-height: 50px;
     }
@@ -117,7 +118,7 @@
         right: 0;
         bottom: 100%;
         width: 100%;
-        background: #ff5f1f;
+        background: inherit;
         padding: 0.8em;
         padding-bottom: 0;
         overflow: hidden;

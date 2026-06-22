@@ -136,7 +136,7 @@
 
     #debug-view {
         position: fixed;
-        bottom: 1.6em;
+        bottom: 0;
         padding: 1em;
         border: 1px red solid;
         z-index: 1000;

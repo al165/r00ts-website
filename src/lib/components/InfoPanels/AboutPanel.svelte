@@ -1,10 +1,13 @@
 <script lang="ts">
     import Button from "../Button.svelte";
 
+    import { markerState } from "$lib/components/Map/marker.svelte";
+
     let show = $state(false);
 
     function onclick() {
         show = !show;
+        markerState.datacenter = null;
     }
 </script>
 
@@ -26,25 +29,47 @@
             modi quo a, provident atque expedita quod. Similique aspernatur quam
             facere omnis?
         </p>
+        <hr />
+        <p>
+            Map data: <a href="https://openfreemap.org/" target="_blank">
+                OpenFreeMap
+            </a>
+            <a href="https://www.openmaptiles.org/" target="_blank">
+                ©OpenMapTiles
+            </a>
+            <a href="https://www.openstreetmap.org/copyright" target="_blank">
+                OpenStreetMap
+            </a>
+            <br />Aerial images:
+            <a href="https://www.mapbox.com/about/maps" target="_blank">
+                ©Mapbox
+            </a>
+            <a href="https://www.maxar.com" target="_blank"> ©Maxar </a>
+        </p>
+        <p>©2026 AIxDESIGN</p>
     </div>
 </div>
 
 <style>
+    .container,
+    .panel {
+        width: 400px;
+    }
+
     .container {
         position: absolute;
-        top: 0;
-        right: 0;
+        top: 5em;
+        right: 2em;
+        height: calc(100vh - 5em - 8em);
         z-index: 11;
-        width: 350px;
         overflow: hidden;
         transition: width 1s cubic-bezier(0.25, 0.1, 0.25, 1);
     }
 
     .panel {
         position: relative;
-        background-color: #e7e7e7;
+        background-color: white;
         padding: 1.5em;
-        width: 350px;
         max-height: 100%;
         display: flex;
         flex-direction: column;
@@ -60,6 +85,7 @@
         cursor: pointer;
         padding: 1em;
         font-family: inherit;
+        background: inherit;
     }
 
     .button-container {
@@ -73,5 +99,9 @@
         position: absolute;
         top: 0;
         right: 0;
+    }
+
+    hr {
+        width: 100%;
     }
 </style>

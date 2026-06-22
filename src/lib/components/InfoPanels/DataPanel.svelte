@@ -89,7 +89,7 @@
 
     .panel {
         position: relative;
-        background-color: #e7e7e7;
+        background-color: white;
         padding: 1.5em;
         width: 350px;
         height: 100%;

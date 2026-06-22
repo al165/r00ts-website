@@ -325,8 +325,8 @@ export class MapRaseriser {
         if (height != undefined)
             this.glyphOverlayCanvas.height = height / dpr;
 
-        this.cols = Math.floor(this.glyphOverlayCanvas.width / this.glyphSize);
-        this.rows = Math.floor(this.glyphOverlayCanvas.height / this.glyphSize);
+        this.cols = Math.ceil(this.glyphOverlayCanvas.width / this.glyphSize);
+        this.rows = Math.ceil(this.glyphOverlayCanvas.height / this.glyphSize);
 
         this.offscreenCanvas.width = this.cols;
         this.offscreenCanvas.height = this.rows;
