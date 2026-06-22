@@ -2,6 +2,7 @@
     import Button from "../Button.svelte";
 
     import { markerState } from "$lib/components/Map/marker.svelte";
+    import MapLegend from "./MapLegend.svelte";
 
     let show = $state(false);
 
@@ -30,6 +31,7 @@
             facere omnis?
         </p>
         <hr />
+        <MapLegend />
         <p>
             Map data: <a href="https://openfreemap.org/" target="_blank">
                 OpenFreeMap
@@ -53,7 +55,7 @@
 <style>
     .container,
     .panel {
-        width: 400px;
+        width: 450px;
     }
 
     .container {

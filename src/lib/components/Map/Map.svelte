@@ -1,6 +1,8 @@
 <script lang="ts">
     import { unmount, onDestroy, onMount } from "svelte";
 
+    import Button from "../Button.svelte";
+
     import maplibregl from "maplibre-gl";
     import "maplibre-gl/dist/maplibre-gl.css";
 
@@ -13,13 +15,13 @@
     import { addMarker, markerState } from "./marker.svelte.ts";
     import DebugPanel from "./DebugPanel.svelte";
     import type { Datacenter } from "$lib/types";
+    import { glyphSize } from "./glyphState.svelte.ts";
 
     import {
         destroyLocationMarker,
         getUserLocation,
         showLocation,
     } from "./locationMarker.svelte.ts";
-    import Button from "../Button.svelte";
 
     let mapContainer: HTMLDivElement;
     let mapBuildingsContainer: HTMLDivElement;
@@ -37,7 +39,6 @@
         center?: [number, number];
         geoJSON?: any;
         datacenters?: Datacenter[];
-        glyphSize?: number;
         showDebug?: boolean;
         children?: any;
         leftPadding: number;
@@ -47,7 +48,6 @@
         zoom = 2,
         center = [0, 0],
         datacenters,
-        glyphSize = 10,
         showDebug = false,
         leftPadding = 100,
         children,
@@ -160,7 +160,7 @@
             mapCanvas,
             offscreenCanvas,
             glyphPaletteCanvas,
-            glyphSize,
+            glyphSize.value,
         );
 
         // map.addControl(new maplibregl.NavigationControl());

@@ -15,8 +15,8 @@ export const GLYPH_FUNCTIONS: { name: string, fn: GlyphDrawFn }[] = [
             ctx.strokeStyle = colourToString(fg);
 
             ctx.beginPath();
-            ctx.moveTo(0, s);
-            ctx.lineTo(s, s);
+            ctx.moveTo(0, s / 2);
+            ctx.lineTo(s, s / 2);
             ctx.stroke();
         }
     },
@@ -98,7 +98,7 @@ export const GLYPH_FUNCTIONS: { name: string, fn: GlyphDrawFn }[] = [
             ctx.strokeStyle = colourToString(fg);
 
             const o = s * 0.1;
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(o, o);
             ctx.lineTo(s - 0, s - 0);

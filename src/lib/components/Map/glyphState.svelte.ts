@@ -1,6 +1,6 @@
 import type { GlyphParams } from './types.ts';
 
-export const glyphSize = $state({ value: 10 });
+export const glyphSize = $state({ value: 8 });
 
 export const glyphState: GlyphParams[] = $state.raw([
     {
@@ -11,26 +11,25 @@ export const glyphState: GlyphParams[] = $state.raw([
         fg: "#FFF",
     },
     {
-        glyphName: "triangle",
-        label: "grass",
-        rgb: [255, 0, 255],
-        bg: "#FFF",
-        fg: "#FF88A0",
-    },
-    {
-        glyphName: "cross",
+        glyphName: "line_h",
         label: "land",
         rgb: [0, 0, 255],
         bg: "#FFF",
         fg: "#FF65AD",
     },
-
     {
-        glyphName: "slash",
+        glyphName: "wedge",
+        label: "grass",
+        rgb: [255, 0, 255],
+        bg: "#FFF",
+        fg: "#FFB7FF",
+    },
+    {
+        glyphName: "triangle",
         label: "wood",
         rgb: [0, 255, 255],
         bg: "#FFF",
-        fg: "#FFB7FF",
+        fg: "#FF88A0",
     },
     {
         glyphName: "circle",
