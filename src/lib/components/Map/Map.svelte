@@ -102,7 +102,6 @@
                     markerState.datacenter.lon,
                     markerState.datacenter.lat,
                 ],
-                padding: { right: 350 },
                 duration: 1000,
             });
         }

@@ -22,23 +22,6 @@
 
         return list;
     });
-
-    let time = $derived(
-        Object.values(entries).reduce((p, e) => {
-            return Math.min(e.durationMs ?? Infinity, p);
-        }, Infinity),
-    );
-
-    // VERY rough upper-bound estimate of distance to server:
-    //   c = 200 km/ms (light in fibre optic)
-    //   t (time in ms of request TTFB)
-    //   d = (t/2) * c / 2 / 2
-    //          ^        ^   ^-- new TLS handshake takes back-and-forth
-    //          |        '------ server overhead roughly doubles TTFB
-    //          '--------------- there and back again
-    // still useful for estimating continent hops
-    // const c = 200;
-    // let distance = $derived(((time / 2) * c) / 2 / 2);
 </script>
 
 <div class="container">
@@ -96,55 +79,6 @@
                 </Tooltip>
             </li>
         {/if}
-        <!-- {#if time < Infinity} -->
-        <!--     <li> -->
-        <!--         With the shortest connection taking -->
-        <!--         <span class="time-stat"> -->
-        <!--             {time} milliseconds -->
-        <!--         </span> -->
-        <!--         <Tooltip colour="#ff5f1f"> -->
-        <!--             <p>This was the round-trip fastest repsonse on an IP.</p> -->
-        <!--         </Tooltip> -->
-        <!--     </li> -->
-        <!-- {/if} -->
-        <!-- {#if time < 500} -->
-        <!--     <li> -->
-        <!--         Which means it is roughly -->
-        <!--         <span class="distance-stat"> -->
-        <!--             within a {distance}km radius -->
-        <!--         </span> -->
-        <!--         of your location -->
-        <!--         <Tooltip colour="#ff70b3"> -->
-        <!--             <h2>How is this estimated?</h2> -->
-        <!--             <p> -->
-        <!--                 This is a <i>very</i> rough estimate of maximum distance -->
-        <!--                 the data center must be, based on how quickly it responded -->
-        <!--                 to a request. -->
-        <!--             </p> -->
-        <!--             <p> -->
-        <!--                 The speed of light in fibre optic is 200 kilometers per -->
-        <!--                 milliseconds, so the distance is roughly how far light -->
-        <!--                 can travel in half of the time the server responded -->
-        <!--                 (since the total time includes there-and-back again). -->
-        <!--             </p> -->
-        <!--             <p> -->
-        <!--                 We further refine this by dividing the time by 2 again -->
-        <!--                 to account for the TLS handshake (which is an extra back -->
-        <!--                 and forth) -->
-        <!--             </p> -->
-        <!--             <p> -->
-        <!--                 Finally, we divide it again by 2 to roughly estimate the -->
-        <!--                 time for the server to process the request. -->
-        <!--             </p> -->
-        <!--             <p>The final formula for estimating the distance is then</p> -->
-        <!--             <pre>  d = c * (t / 2) / 2 / 2</pre> -->
-        <!--             <p> -->
-        <!--                 Where 'c = 200' and 't' is the server response time in -->
-        <!--                 milliseconds. -->
-        <!--             </p> -->
-        <!--         </Tooltip> -->
-        <!--     </li> -->
-        <!-- {/if} -->
     </ul>
 </div>
 

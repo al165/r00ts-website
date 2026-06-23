@@ -116,7 +116,6 @@
     }
 
     .ip {
-        padding-left: 2em;
         text-align: right;
     }
 
@@ -129,6 +128,7 @@
         font-size: inherit;
         display: flex;
         flex-direction: row;
+        justify-content: space-between;
         padding: 0 1em;
         background: inherit;
     }
