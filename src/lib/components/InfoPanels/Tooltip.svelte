@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onMount } from "svelte";
     import { getTooltipState } from "./tooltip.svelte";
 
     interface Props {
@@ -9,21 +10,49 @@
 
     let id = Symbol();
     const tooltipState = getTooltipState();
+
+    let element: HTMLElement;
+
+    let left: string = $state("50vh");
+    let bottom: string = $state("50vw");
+
+    let open = $derived.by(() => {
+        return tooltipState.openTooltips.has(id);
+    });
+
+    onMount(() => {
+        const bounds = element.getBoundingClientRect();
+        left = bounds.left + bounds.width + "px";
+        bottom = window.innerHeight - bounds.bottom + "px";
+    });
 </script>
 
 <button
     onclick={() => {
         tooltipState.toggle(id);
     }}
+    bind:this={element}
 >
     (?)
 </button>
 
-{#if tooltipState.active === id}
-    <div class="tooltip" style:background={colour}>
+{#if open}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div
+        class="tooltip"
+        style:background={colour}
+        style:left
+        style:bottom
+        class:above={tooltipState.active == id}
+        onclick={() => {
+            tooltipState.active = id;
+        }}
+    >
         {@render children?.()}
-        <button class="close-btn" onclick={() => tooltipState.close()}>x</button
-        >
+        <button class="close-btn" onclick={() => tooltipState.close(id)}>
+            X
+        </button>
     </div>
 {/if}
 
@@ -40,12 +69,13 @@
     .tooltip {
         position: fixed;
         z-index: 12;
-        top: 50vh;
-        left: 50vw;
         max-width: 20em;
         background: #e7e7e7;
         padding: 1em;
-        transform: translate(-50%, -50%);
+    }
+
+    .above {
+        z-index: 13;
     }
 
     .close-btn {

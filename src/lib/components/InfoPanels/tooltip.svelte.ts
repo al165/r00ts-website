@@ -1,10 +1,31 @@
+import { SvelteSet } from "svelte/reactivity";
+
+let openTooltips: SvelteSet<symbol> = new SvelteSet();
 let currentTooltip: null | symbol = $state(null);
 
 export function getTooltipState() {
     return {
         get active() { return currentTooltip },
-        open(id: symbol) { currentTooltip = id },
-        close() { currentTooltip = null },
-        toggle(id: symbol) { currentTooltip = (currentTooltip === id ? null : id) }
+        set active(id: symbol | null) { currentTooltip = id },
+        get openTooltips() { return openTooltips },
+        open(id: symbol) {
+            openTooltips.add(id);
+            currentTooltip = id;
+        },
+        close(id: symbol) {
+            openTooltips.delete(id);
+            currentTooltip = null;
+        },
+        toggle(id: symbol) {
+            if (openTooltips.has(id)) {
+                openTooltips.delete(id);
+                currentTooltip = null;
+            }
+            else {
+                openTooltips.add(id);
+                currentTooltip = id;
+            }
+        },
+        closeAll() { openTooltips.clear() }
     }
 }

@@ -34,7 +34,7 @@
             <a
                 href="https://github.com/al165/r00ts-extension/releases/tag/v0.5"
             >
-                <button id="download-btn">
+                <button id="r00ts-download-btn">
                     Download the extension (Firefox and Chrome!)
                 </button>
             </a>
@@ -51,7 +51,7 @@
         box-sizing: border-box;
     }
 
-    #download-btn {
+    #r00ts-download-btn {
         position: absolute;
         bottom: 2em;
         left: 2em;
