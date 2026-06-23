@@ -10,7 +10,7 @@ export async function load({ url }) {
     let entries = null;
     let pageUrl: string | undefined;
     let networks: { [key: number]: Network } = {};
-    let networksDatacenters = null;
+    let networksDatacenters: { [key: number]: number[] } = {};
 
     if (data64) {
         try {
