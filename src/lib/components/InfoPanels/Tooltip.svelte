@@ -25,7 +25,7 @@
         bind:this={element}
         style:background
     >
-        (?)
+        ?
     </button>
     {#if open}
         <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -59,16 +59,19 @@
         font-family: inherit;
         padding: 0;
         cursor: pointer;
+        aspect-ratio: 1;
+        height: 1.5em;
     }
 
     .tooltip {
         position: absolute;
-        left: 100%;
-        bottom: 0;
+        left: 120%;
+        bottom: 50%;
         z-index: 12;
         min-width: 20em;
         background: #e7e7e7;
         padding: 1em;
+        font-size: 12pt;
     }
 
     .above {

@@ -41,8 +41,8 @@
     >
         {#if open && !zoomed}
             <div class="title" class:highlighted>
-                <h1>{datacenter.name}</h1>
                 <WeatherComponent {weather} />
+                <h1>{datacenter.name}</h1>
             </div>
 
             <DataPanel {datacenter} />
@@ -127,6 +127,7 @@
     h1 {
         font-size: 12pt;
         margin: 0;
+        text-align: right;
     }
 
     :global(.datacenter-marker) {

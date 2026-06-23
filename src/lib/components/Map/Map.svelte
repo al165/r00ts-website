@@ -229,13 +229,13 @@
     {/if}
 
     <div class="controls">
-        <Button onclick={() => fitAll(true)}>fit all</Button>
+        <Button onclick={() => fitAll(true)}>Fit all</Button>
         {#if "geolocation" in navigator}
             <Button
                 highlight={showLocation.value}
                 onclick={() => getUserLocation(map)}
             >
-                locate
+                Locate
             </Button>
         {/if}
     </div>

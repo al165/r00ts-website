@@ -26,12 +26,12 @@
 
 <div class="container">
     <span>
-        your session on <em>{pageUrl ?? "the website"}</em> was served by:
+        your session on<br /> <em>{pageUrl ?? "the website"}</em> was served by:
     </span>
     <ul>
         {#if num_ips > 0}
             <li>
-                <span class="ip-stat">
+                <span class="stat">
                     {num_ips} IP {num_ips > 1 ? "addresses" : "address"}
                 </span>
                 <Tooltip background="yellow">
@@ -51,7 +51,7 @@
         {#if num_datacenters > 0}
             <li>
                 {num_datacenters == 1 ? "From" : "From up to"}
-                <span class="datacenter-stat">
+                <span class="stat">
                     {num_datacenters}
                     {num_datacenters == 1 ? "datacenter" : "datacenters"}
                 </span>
@@ -68,7 +68,7 @@
             </li>
             <li>
                 {num_datacenters == 1 ? "In" : "Across"}
-                <span class="cities-stat"> {cities} </span>
+                <span class="stat"> {cities} </span>
                 <Tooltip background="#8ff0a4">
                     <h2>Why so many cities?</h2>
                     <p>
@@ -84,13 +84,17 @@
 
 <style>
     .container {
+        font-size: 22pt;
         position: absolute;
-        bottom: 2em;
+        bottom: 1em;
         left: 1em;
         max-width: 24em;
-        background: white;
         display: flex;
         flex-direction: column;
         z-index: 10;
+    }
+
+    .stat {
+        background: white;
     }
 </style>

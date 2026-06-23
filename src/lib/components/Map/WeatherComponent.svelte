@@ -75,8 +75,7 @@
     .container {
         font-weight: 600;
         font-size: 16pt;
-        width: 7em;
-        text-align: right;
+        text-align: left;
         white-space: nowrap;
     }
 </style>
