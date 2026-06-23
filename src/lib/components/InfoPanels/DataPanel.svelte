@@ -9,6 +9,38 @@
 
     let { datacenter }: Props = $props();
 
+    let networks = $derived.by(() => {
+        if (
+            datacenter.id == undefined ||
+            !dataState.networks ||
+            !dataState.networksDatacenters
+        )
+            return [];
+
+        let network_list: string[] = [];
+        for (const [network_id, datacenters] of Object.entries(
+            dataState.networksDatacenters,
+        )) {
+            if (datacenters.includes(datacenter.id))
+                network_list.push(
+                    dataState.networks[parseInt(network_id)].network_name,
+                );
+        }
+        return network_list;
+    });
+
+    let networksString = $derived.by(() => {
+        if (networks.length == 0) return "on an unknown network";
+        else if (networks.length == 1) return `on the ${networks[0]} network`;
+        else {
+            return (
+                "on the " +
+                networks.slice(0, -1).join(", ") +
+                ` and ${networks.at(-1)} networks`
+            );
+        }
+    });
+
     let ips = $derived.by(() => {
         if (
             datacenter.id == undefined ||
@@ -100,52 +132,54 @@
         <p>City: {datacenter.city}</p>
         {#if time != Infinity}
             <p>
-                With the shortest connection taking
+                The shortest connection took
                 <span class="time-stat">
                     {time} milliseconds
                 </span>
                 <Tooltip background="#ff5f1f">
-                    <p>This was the round-trip fastest repsonse on an IP.</p>
+                    <p>
+                        This was the round-trip fastest repsonse on an IP
+                        potentially served by this datacenter.
+                    </p>
                 </Tooltip>
+                {#if time < 500}
+                    which means it is roughly
+                    <span class="distance-stat">
+                        within a {distance}km radius
+                    </span>
+                    of your location
+                    <Tooltip background="#ff70b3">
+                        <h2>How is this estimated?</h2>
+                        <p>
+                            This is a <i>very</i> rough estimate of maximum distance
+                            the data center must be, based on how quickly it responded
+                            to a request.
+                        </p>
+                        <p>
+                            The speed of light in fibre optic cable is 200
+                            kilometers per milliseconds, so the distance is
+                            roughly how far light can travel in half of the time
+                            the server responded (since the total time includes
+                            there-and-back again).
+                        </p>
+                        <p>
+                            We further refine this by dividing the time by 2
+                            again to account for the TLS handshake (which is an
+                            extra back and forth), and finally we divide it
+                            again by 2 to roughly estimate the time for the
+                            server to process the request.
+                        </p>
+                        <p>
+                            The final formula for estimating the distance is
+                            then
+                        </p>
+                        <pre>  d = 200 * (t / 2) / 2 / 2</pre>
+                    </Tooltip>
+                {/if}
             </p>
         {/if}
-        {#if time < 500}
-            <p>
-                Which means it is roughly
-                <span class="distance-stat">
-                    within a {distance}km radius
-                </span>
-                of your location
-                <Tooltip background="#ff70b3">
-                    <h2>How is this estimated?</h2>
-                    <p>
-                        This is a <i>very</i> rough estimate of maximum distance
-                        the data center must be, based on how quickly it responded
-                        to a request.
-                    </p>
-                    <p>
-                        The speed of light in fibre optic is 200 kilometers per
-                        milliseconds, so the distance is roughly how far light
-                        can travel in half of the time the server responded
-                        (since the total time includes there-and-back again).
-                    </p>
-                    <p>
-                        We further refine this by dividing the time by 2 again
-                        to account for the TLS handshake (which is an extra back
-                        and forth)
-                    </p>
-                    <p>
-                        Finally, we divide it again by 2 to roughly estimate the
-                        time for the server to process the request.
-                    </p>
-                    <p>The final formula for estimating the distance is then</p>
-                    <pre>  d = c * (t / 2) / 2 / 2</pre>
-                    <p>
-                        Where 'c = 200' and 't' is the server response time in
-                        milliseconds.
-                    </p>
-                </Tooltip>
-            </p>
+        {#if networks.length}
+            This datacenter is {networksString}.
         {/if}
         {#if ips.length > 0}
             <p>Potentially served:</p>
@@ -177,7 +211,6 @@
         left: 110%;
         z-index: 11;
         width: 350px;
-        overflow: hidden;
     }
 
     .panel {
