@@ -27,6 +27,10 @@
         markerState.highlighted = dataState.networksDatacenters[selectedNetId];
     });
 
+    $effect(() => {
+        if (markerState.datacenter != null) selectedNetId = null;
+    });
+
     const networkIps: { [key: number]: Entry[] } = $derived.by(() => {
         const result: { [key: number]: Entry[] } = {};
 
@@ -57,6 +61,7 @@
                 onclick={(ev) => {
                     selectedNetId = selectedNetId == netId ? null : netId;
                     entryElement = ev.currentTarget;
+                    markerState.datacenter = null;
                 }}
                 onmouseover={() => {
                     preview(netId);
