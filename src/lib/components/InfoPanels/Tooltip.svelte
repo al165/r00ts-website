@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { onMount } from "svelte";
     import { getTooltipState } from "./tooltip.svelte";
 
     interface Props {
@@ -13,51 +12,46 @@
 
     let element: HTMLElement;
 
-    let left: string = $state("50vh");
-    let bottom: string = $state("50vw");
-
     let open = $derived.by(() => {
         return tooltipState.openTooltips.has(id);
     });
-
-    onMount(() => {
-        const bounds = element.getBoundingClientRect();
-        left = bounds.left + bounds.width + "px";
-        bottom = window.innerHeight - bounds.bottom + "px";
-    });
 </script>
 
-<button
-    onclick={() => {
-        tooltipState.toggle(id);
-    }}
-    bind:this={element}
-    style:background
->
-    (?)
-</button>
-
-{#if open}
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div
-        class="tooltip"
-        style:background
-        style:left
-        style:bottom
-        class:above={tooltipState.active == id}
+<div class="container">
+    <button
         onclick={() => {
-            tooltipState.active = id;
+            tooltipState.toggle(id);
         }}
+        bind:this={element}
+        style:background
     >
-        {@render children?.()}
-        <button class="close-btn" onclick={() => tooltipState.close(id)}>
-            X
-        </button>
-    </div>
-{/if}
+        (?)
+    </button>
+    {#if open}
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div
+            class="tooltip"
+            style:background
+            class:above={tooltipState.active == id}
+            onclick={() => {
+                tooltipState.active = id;
+            }}
+        >
+            {@render children?.()}
+            <button class="close-btn" onclick={() => tooltipState.close(id)}>
+                X
+            </button>
+        </div>
+    {/if}
+</div>
 
 <style>
+    .container {
+        display: inline-block;
+        position: relative;
+    }
+
     button {
         border: none;
         font-weight: 600;
@@ -68,9 +62,11 @@
     }
 
     .tooltip {
-        position: fixed;
+        position: absolute;
+        left: 100%;
+        bottom: 0;
         z-index: 12;
-        max-width: 20em;
+        min-width: 20em;
         background: #e7e7e7;
         padding: 1em;
     }
