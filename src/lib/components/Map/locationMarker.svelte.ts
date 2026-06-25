@@ -1,6 +1,6 @@
 import maplibregl from "maplibre-gl";
-import { mount, unmount } from "svelte";
-import LocationMarker from "./LocationMarker.svelte";
+import { unmount } from "svelte";
+import { addSticker, stickerState } from "./sticker.svelte";
 
 let watchId: number;
 let locationMarker: maplibregl.Marker | null = null;
@@ -11,25 +11,21 @@ export let showLocation = $state({ value: false });
 let follow = true;
 
 function success(map: maplibregl.Map, position: GeolocationPosition) {
-    // Success
     if (!locationMarker) {
-        const locationMarkerEl = document.createElement("div");
-        locationMarkerEl.style.zIndex = "5";
-        component = mount(LocationMarker, { target: locationMarkerEl });
-
-        locationMarker = new maplibregl.Marker({
-            element: locationMarkerEl,
-            draggable: true,
-        })
-            .setLngLat([
+        if (!stickerState.locationMarker) {
+            const sticker = addSticker(map, [
                 position.coords.longitude,
                 position.coords.latitude,
-            ])
-            .addTo(map);
+            ], "bug");
+
+            locationMarker = sticker.marker;
+            component = sticker.component;
+        } else {
+            locationMarker = stickerState.locationMarker;
+        }
 
         locationMarker.once('dragstart', () => {
-            // stop updating location
-            window.navigator.geolocation.clearWatch(watchId);
+            stopUpdatingLocation();
         });
 
         follow = true;
@@ -38,9 +34,12 @@ function success(map: maplibregl.Map, position: GeolocationPosition) {
             follow = false;
         });
 
+        map.once('zoomstart', () => {
+            follow = false;
+        });
+
         map.flyTo({
             center: locationMarker.getLngLat(),
-            zoom: 12,
         });
     } else {
         // update location marker
@@ -52,7 +51,6 @@ function success(map: maplibregl.Map, position: GeolocationPosition) {
         if (follow)
             map.jumpTo({
                 center: locationMarker.getLngLat(),
-                zoom: 12,
             });
     }
 }
@@ -66,6 +64,7 @@ function error(error: GeolocationPositionError) {
 
 export function getUserLocation(map: maplibregl.Map) {
     if (!showLocation.value) {
+        showLocation.value = true;
         watchId = window.navigator.geolocation.watchPosition(
             (position) => success(map, position),
             error,
@@ -75,11 +74,20 @@ export function getUserLocation(map: maplibregl.Map) {
         locationMarker?.remove();
         locationMarker = null;
 
-        if (watchId != undefined)
-            window.navigator.geolocation.clearWatch(watchId);
+        stickerState.locationMarker = null;
+        stopUpdatingLocation();
     }
 
-    showLocation.value = !showLocation.value;
+    return showLocation.value;
+}
+
+export function stopUpdatingLocation() {
+    // Keeps marker in place
+    if (watchId != undefined)
+        window.navigator.geolocation.clearWatch(watchId);
+
+    showLocation.value = false;
+
 }
 
 export function destroyLocationMarker() {

@@ -22,6 +22,10 @@
         getUserLocation,
         showLocation,
     } from "./locationMarker.svelte.ts";
+    import StickerPalette from "./StickerPalette.svelte";
+    import { addSticker, stickerState } from "./sticker.svelte.ts";
+    import Tooltip from "../InfoPanels/Tooltip.svelte";
+    import { TooltipPositions } from "../InfoPanels/tooltip.svelte.ts";
 
     let mapContainer: HTMLDivElement;
     let mapBuildingsContainer: HTMLDivElement;
@@ -198,6 +202,38 @@
         fitAll();
     });
 
+    export function getMap() {
+        return map;
+    }
+
+    function ondragover(e: MouseEvent) {
+        e.preventDefault();
+    }
+
+    function ondrop(e: DragEvent) {
+        e.preventDefault();
+
+        if (!map) return;
+
+        const data = e.dataTransfer?.getData("text/plain");
+
+        const mapRect = mapContainer.getBoundingClientRect();
+        const point = new maplibregl.Point(
+            e.clientX - mapRect.left,
+            e.clientY - mapRect.top,
+        );
+
+        const lngLat = map.unproject(point);
+        onMarkerDropped(lngLat, data);
+    }
+
+    function onMarkerDropped(point: maplibregl.LngLat, data?: string) {
+        if (!map) return;
+
+        const sticker = addSticker(map, point, data);
+        stickerState.locationMarker = sticker.marker;
+    }
+
     onDestroy(() => {
         destroyLocationMarker();
         for (const { marker, component } of datacenterMarkers) {
@@ -216,7 +252,8 @@
         class="base-map map-overlay fill"
     ></div>
 
-    <div bind:this={mapContainer} class="fill"></div>
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div bind:this={mapContainer} class="fill" {ondrop} {ondragover}></div>
 
     <canvas
         bind:this={glyphOverlayCanvas}
@@ -230,14 +267,26 @@
 
     <div class="controls">
         <Button onclick={() => fitAll(true)}>Fit all</Button>
-        {#if "geolocation" in navigator}
-            <Button
-                highlight={showLocation.value}
-                onclick={() => getUserLocation(map)}
-            >
-                Locate
-            </Button>
-        {/if}
+        <div class="horizontal">
+            <Tooltip position={TooltipPositions.UPPER_LEFT}>
+                Drag the sticker to indicate your location, or click "Locate" to
+                estimate your location.
+            </Tooltip>
+            {#if "geolocation" in navigator}
+                <Button
+                    highlight={showLocation.value}
+                    onclick={() => {
+                        const showingLocation = getUserLocation(map);
+                        if (showingLocation)
+                            stickerState.avaliable.delete("bug");
+                        else stickerState.avaliable.add("bug");
+                    }}
+                >
+                    <StickerPalette />
+                    Locate
+                </Button>
+            {/if}
+        </div>
     </div>
     {@render children?.()}
 </div>
@@ -257,6 +306,10 @@
         height: 100%;
     }
 
+    :global(.maplibregl-marker) {
+        z-index: 3;
+    }
+
     #buildings-map {
         z-index: 1;
     }
@@ -271,6 +324,12 @@
         right: 1em;
         display: flex;
         flex-direction: column;
+        align-items: end;
         z-index: 5;
+    }
+
+    .horizontal {
+        display: flex;
+        align-items: center;
     }
 </style>

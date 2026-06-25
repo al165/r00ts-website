@@ -22,6 +22,7 @@
         font-weight: lighter;
         font-size: 16pt;
         margin: 0.2em;
+        width: fit-content;
     }
 
     button:hover {
