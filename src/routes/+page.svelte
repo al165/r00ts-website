@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { untrack } from "svelte";
+    import { onMount } from "svelte";
 
     import IpPanel from "$lib/components/InfoPanels/IpPanel.svelte";
     import SummaryPanel from "$lib/components/InfoPanels/SummaryPanel.svelte";
@@ -7,23 +7,28 @@
 
     import { dataState } from "$lib/components/InfoPanels/data.svelte.js";
     import AboutPanel from "$lib/components/InfoPanels/AboutPanel.svelte";
+    import SessionPanel from "$lib/components/InfoPanels/SessionPanel.svelte";
+    import type { Datacenter } from "$lib/types.js";
 
     const { data } = $props();
 
-    untrack(() => {
+    onMount(() => {
         dataState.networks = data.networks;
         dataState.networksDatacenters = data.networksDatacenters;
         dataState.entries = data.entries;
     });
+
+    let datacenters: Datacenter[] = $derived(data.datacenters);
 </script>
 
 <div class="contents">
     <Map
-        datacenters={data.datacenters}
+        {datacenters}
         showDebug={data.showDebug}
         leftPadding={data.entries ? 500 : 100}
     >
         {#if data.entries}
+            <SessionPanel hostname={data.pageUrl} />
             <IpPanel />
             <SummaryPanel
                 entries={data.entries}

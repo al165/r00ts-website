@@ -34,6 +34,8 @@
     const networkIps: { [key: number]: Entry[] } = $derived.by(() => {
         const result: { [key: number]: Entry[] } = {};
 
+        if (!dataState.entries) return [];
+
         for (const ip of Object.keys(dataState.entries)) {
             const entry = dataState.entries[ip];
             if (!entry.network_id) continue;

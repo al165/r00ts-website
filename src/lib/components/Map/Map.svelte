@@ -29,7 +29,7 @@
 
     let mapContainer: HTMLDivElement;
     let mapBuildingsContainer: HTMLDivElement;
-    let map: maplibregl.Map;
+    let map: maplibregl.Map | null = $state.raw(null);
     let mapBuildingsLayer: maplibregl.Map;
 
     let mapCanvas: HTMLCanvasElement;
@@ -57,11 +57,14 @@
         children,
     }: Props = $props();
 
-    let datacenterMarkers: {
-        marker: maplibregl.Marker;
-        component: any;
-        id: number;
-    }[] = [];
+    let datacenterMarkers: Map<
+        number,
+        {
+            marker: maplibregl.Marker;
+            component: any;
+            id: number;
+        }
+    > = new Map();
 
     // svelte-ignore state_referenced_locally
     let zoomState = $state({ value: zoom });
@@ -73,27 +76,24 @@
     }
 
     function fitAll(animate: boolean = false) {
-        if (datacenters?.length) {
-            const bounds = datacenters.reduce((bounds, dc) => {
-                return bounds.extend([dc.lon, dc.lat]);
-            }, new maplibregl.LngLatBounds());
+        if (!datacenters) return;
 
-            let delay = markerState.datacenter == null ? 0 : 1000;
-            markerState.datacenter = null;
+        const bounds = datacenters.reduce((bounds, dc) => {
+            return bounds.extend([dc.lon, dc.lat]);
+        }, new maplibregl.LngLatBounds());
 
-            setTimeout(() => {
-                map.fitBounds(bounds, {
-                    maxZoom: 16,
-                    padding: {
-                        left: leftPadding,
-                        right: 100,
-                        top: 100,
-                        bottom: 100,
-                    },
-                    animate,
-                });
-            }, delay);
-        }
+        markerState.datacenter = null;
+
+        map?.fitBounds(bounds, {
+            maxZoom: 16,
+            padding: {
+                left: leftPadding,
+                right: 100,
+                top: 100,
+                bottom: 100,
+            },
+            animate,
+        });
     }
 
     $effect(() => {
@@ -114,12 +114,12 @@
     $effect(() => {
         if (markerState.highlighted?.length) {
             const bounds = new maplibregl.LngLatBounds();
-            datacenterMarkers.map((dm) => {
+            datacenterMarkers.forEach((dm) => {
                 if (markerState.highlighted.includes(dm.id))
                     bounds.extend(dm.marker.getLngLat());
             });
 
-            map.fitBounds(bounds, {
+            map?.fitBounds(bounds, {
                 maxZoom: 16,
                 padding: {
                     left: leftPadding,
@@ -130,6 +130,21 @@
             });
         }
     });
+
+    // $effect(() => {
+    //     if (map && datacenters?.length) {
+    //         datacenters.forEach((dc) => {
+    //             datacenterMarkers.push(
+    //                 addMarker(map, {
+    //                     datacenter: dc,
+    //                     zoomState,
+    //                 }),
+    //             );
+    //         });
+    //     }
+    //
+    //     fitAll();
+    // });
 
     onMount(() => {
         mapBuildingsLayer = new maplibregl.Map({
@@ -173,7 +188,7 @@
         });
 
         map.on("zoom", () => {
-            zoomState.value = map.getZoom();
+            if (map) zoomState.value = map.getZoom();
         });
 
         map.on("load", () => {
@@ -187,19 +202,6 @@
         });
 
         rasteriser?.resize(mapCanvas.width, mapCanvas.height);
-
-        if (datacenters?.length) {
-            datacenters.forEach((dc) => {
-                datacenterMarkers.push(
-                    addMarker(map, {
-                        datacenter: dc,
-                        zoomState,
-                    }),
-                );
-            });
-        }
-
-        fitAll();
     });
 
     export function getMap() {
@@ -236,12 +238,36 @@
 
     onDestroy(() => {
         destroyLocationMarker();
-        for (const { marker, component } of datacenterMarkers) {
+        datacenterMarkers.forEach(({ marker, component }) => {
             marker.remove();
             unmount(component);
-        }
+        });
         map?.remove();
         mapBuildingsLayer?.remove();
+    });
+
+    $effect(() => {
+        if (!map) return;
+
+        const incoming = new Set(datacenters?.map((dc) => dc.id));
+
+        for (const [id, dcm] of datacenterMarkers) {
+            if (incoming.has(id)) continue;
+            unmount(dcm.component);
+            dcm.marker.remove();
+            datacenterMarkers.delete(id);
+        }
+
+        if (datacenters)
+            for (const dc of datacenters) {
+                const { marker, component } = addMarker(map, {
+                    datacenter: dc,
+                    zoomState,
+                });
+                datacenterMarkers.set(dc.id, { marker, component, id: dc.id });
+            }
+
+        fitAll();
     });
 </script>
 
@@ -276,6 +302,7 @@
                 <Button
                     highlight={showLocation.value}
                     onclick={() => {
+                        if (!map) return;
                         const showingLocation = getUserLocation(map);
                         if (showingLocation)
                             stickerState.avaliable.delete("bug");
