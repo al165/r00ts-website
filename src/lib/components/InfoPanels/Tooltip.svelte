@@ -1,11 +1,16 @@
 <script lang="ts">
-    import { getTooltipState } from "./tooltip.svelte";
+    import { getTooltipState, TooltipPositions } from "./tooltip.svelte";
 
     interface Props {
         children: any;
         background?: string;
+        position?: TooltipPositions;
     }
-    let { children, background }: Props = $props();
+    let {
+        children,
+        background,
+        position = TooltipPositions.UPPER_RIGHT,
+    }: Props = $props();
 
     let id = Symbol();
     const tooltipState = getTooltipState();
@@ -15,11 +20,46 @@
     let open = $derived.by(() => {
         return tooltipState.openTooltips.has(id);
     });
+
+    let posRight = $derived(
+        position == TooltipPositions.UPPER_RIGHT ||
+            position == TooltipPositions.LOWER_RIGHT ||
+            position == TooltipPositions.MIDDLE_RIGHT,
+    );
+
+    let posLeft = $derived(
+        position == TooltipPositions.UPPER_LEFT ||
+            position == TooltipPositions.LOWER_LEFT ||
+            position == TooltipPositions.MIDDLE_LEFT,
+    );
+
+    let posLower = $derived(
+        position == TooltipPositions.LOWER_CENTER ||
+            position == TooltipPositions.LOWER_LEFT ||
+            position == TooltipPositions.LOWER_RIGHT,
+    );
+
+    let posUpper = $derived(
+        position == TooltipPositions.UPPER_CENTER ||
+            position == TooltipPositions.UPPER_LEFT ||
+            position == TooltipPositions.UPPER_RIGHT,
+    );
+
+    let posCenter = $derived(
+        position == TooltipPositions.LOWER_CENTER ||
+            position == TooltipPositions.UPPER_CENTER,
+    );
+
+    let posMiddle = $derived(
+        position == TooltipPositions.MIDDLE_LEFT ||
+            position == TooltipPositions.MIDDLE_RIGHT,
+    );
 </script>
 
 <div class="container">
     <button
-        onclick={() => {
+        onclick={(ev) => {
+            ev.preventDefault();
             tooltipState.toggle(id);
         }}
         bind:this={element}
@@ -32,6 +72,12 @@
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div
             class="tooltip"
+            class:posRight
+            class:posLeft
+            class:posCenter
+            class:posMiddle
+            class:posUpper
+            class:posLower
             style:background
             class:above={tooltipState.active == id}
             onclick={() => {
@@ -64,13 +110,37 @@
 
     .tooltip {
         position: absolute;
-        left: 120%;
-        bottom: 50%;
         z-index: 12;
         min-width: 20em;
         background: #e7e7e7;
         padding: 1em;
         font-size: 12pt;
+    }
+
+    .posRight {
+        left: 120%;
+    }
+
+    .posLeft {
+        right: 120%;
+    }
+
+    .posUpper {
+        bottom: 120%;
+    }
+
+    .posLower {
+        top: 120%;
+    }
+
+    .posMiddle {
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .posCenter {
+        left: 50%;
+        transform: translateX(-50%);
     }
 
     .above {
