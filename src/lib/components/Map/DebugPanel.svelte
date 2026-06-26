@@ -126,6 +126,10 @@
 </div>
 
 <style>
+    canvas {
+        image-rendering: pixelated;
+    }
+
     .mapPreview {
         height: 200px;
     }

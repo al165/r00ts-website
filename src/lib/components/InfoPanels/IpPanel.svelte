@@ -1,9 +1,7 @@
 <script lang="ts">
-    import type { Entry } from "$lib/types";
-
     import { markerState } from "../Map/marker.svelte";
     import { dataState } from "$lib/components/InfoPanels/data.svelte.js";
-    import { ipCompareFn, padIp } from "$lib/ip_utils";
+    import { padIp } from "$lib/ip_utils";
 
     import IpDetailsPanel from "./IpDetailsPanel.svelte";
 
@@ -31,32 +29,12 @@
         if (markerState.datacenter != null) selectedNetId = null;
     });
 
-    const networkIps: { [key: number]: Entry[] } = $derived.by(() => {
-        const result: { [key: number]: Entry[] } = {};
-
-        if (!dataState.entries) return [];
-
-        for (const ip of Object.keys(dataState.entries)) {
-            const entry = dataState.entries[ip];
-            if (!entry.network_id) continue;
-
-            if (!result[entry.network_id]) result[entry.network_id] = [];
-
-            result[entry.network_id].push(dataState.entries[ip]);
-        }
-
-        for (const net_id of Object.keys(result))
-            result[parseInt(net_id)].sort((a, b) => ipCompareFn(a.ip, b.ip));
-
-        return result;
-    });
-
     let entryElement: HTMLDivElement | null = $state(null);
 </script>
 
 <div class="wrapper">
     <div class="container">
-        {#each Object.keys(networkIps).map((k) => parseInt(k)) as netId}
+        {#each Object.keys(dataState.networkIps).map( (k) => parseInt(k), ) as netId}
             <div
                 class="entry"
                 class:selected={selectedNetId == netId}
@@ -92,14 +70,18 @@
                     {/if}
                 </span>
                 <div class="ip-list">
-                    {#each networkIps[netId] as entry}
+                    {#each dataState.networkIps[netId] as entry}
                         <span class="ip">{padIp(entry.ip)}</span>
                     {/each}
                 </div>
             </div>
         {/each}
     </div>
-    <IpDetailsPanel {networkIps} {selectedNetId} {entryElement} />
+    <IpDetailsPanel
+        networkIps={dataState.networkIps}
+        {selectedNetId}
+        {entryElement}
+    />
 </div>
 
 <style>

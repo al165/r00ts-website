@@ -1,17 +1,20 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { resolve } from "$app/paths";
+    import { markerState } from "../Map/marker.svelte";
 
     import { dataState } from "./data.svelte";
 
     let { hostname }: { hostname?: string } = $props();
 
     function onclick() {
-        goto(resolve("/"), {}).then(() => {
-            dataState.entries = {};
-            dataState.networks = {};
-            dataState.networksDatacenters = {};
-        });
+        dataState.entries = {};
+        dataState.networks = {};
+        dataState.networksDatacenters = {};
+        markerState.datacenter = null;
+        markerState.highlighted = [];
+        markerState.preview = [];
+        goto(resolve("/"));
     }
 </script>
 

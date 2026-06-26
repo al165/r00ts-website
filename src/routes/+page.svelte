@@ -16,6 +16,7 @@
         dataState.networks = data.networks;
         dataState.networksDatacenters = data.networksDatacenters;
         dataState.entries = data.entries;
+        dataState.networkIps = data.networkIps;
 
         firstVisit = !sessionStorage.getItem("hasVisited");
         sessionStorage.setItem("hasVisited", "true");
@@ -24,7 +25,9 @@
     let datacenters: Datacenter[] = $derived(data.datacenters);
 
     let firstVisit = $state(false);
-    let inSession: boolean = $derived(data.entries ? true : false);
+    let inSession: boolean = $derived(
+        Object.keys(dataState.entries).length > 0 ? true : false,
+    );
 </script>
 
 <div class="contents">
