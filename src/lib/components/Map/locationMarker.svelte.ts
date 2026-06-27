@@ -66,8 +66,8 @@ export function getUserLocation(map: maplibregl.Map) {
     } else {
         stickerState.locationMarker?.remove();
         stickerState.locationMarker = null;
+        stickerState.loading = false;
 
-        stickerState.locationMarker = null;
         stopUpdatingLocation();
     }
 
@@ -80,11 +80,10 @@ export function stopUpdatingLocation() {
         window.navigator.geolocation.clearWatch(watchId);
 
     showLocation.value = false;
-
+    stickerState.loading = false;
 }
 
 export function destroyLocationMarker() {
-
     if (watchId != undefined)
         window.navigator.geolocation.clearWatch(watchId);
 
