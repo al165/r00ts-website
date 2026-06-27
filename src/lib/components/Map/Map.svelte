@@ -151,6 +151,7 @@
             center,
             zoom,
             attributionControl: false,
+            maxCanvasSize: [8192, 8192],
         });
 
         syncMaps(map, mapBuildingsLayer);
