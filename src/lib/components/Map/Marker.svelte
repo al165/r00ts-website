@@ -4,64 +4,123 @@
     import type { Datacenter, Weather } from "$lib/types";
     import { markerState } from "./marker.svelte";
     import DataPanel from "../InfoPanels/DataPanel.svelte";
+    import { untrack } from "svelte";
+    import maplibregl from "maplibre-gl";
 
     let {
-        zoom = 13,
+        map,
         datacenter,
-        weather = null,
-        onclick,
     }: {
-        zoom: number;
+        map: maplibregl.Map;
         datacenter: Datacenter;
-        weather: Weather | null;
-        onclick: (e?: MouseEvent) => void;
     } = $props();
 
-    let zoomed = $derived(zoom < 13);
-    let no_preview = $derived(zoom < 5);
+    let el: HTMLDivElement;
+
+    $effect(() => {
+        const marker = untrack(() => {
+            return new maplibregl.Marker({ element: el })
+                .setLngLat([datacenter.lon, datacenter.lat])
+                .addTo(map);
+        });
+
+        return () => marker.remove();
+    });
+
     let open = $derived(markerState.datacenter?.id == datacenter.id);
     let highlighted = $derived(
         markerState.highlighted.includes(datacenter.id) ||
             markerState.preview.includes(datacenter.id),
     );
 
+    const aerialAPI = resolve("/api/aerial/");
+    const weatherAPI = resolve("/api/weather");
+
     const aerial_url: string = resolve("/images/aerial/");
+
+    // svelte-ignore state_referenced_locally
+    let aerial_filename = $state(datacenter.filename);
+
+    let weather: Weather | null = $state(null);
+
+    function onclick(ev?: MouseEvent) {
+        ev?.stopPropagation();
+
+        markerState.datacenter = datacenter;
+
+        if (datacenter.filename == null && datacenter.precise) {
+            fetch(`${aerialAPI}${datacenter.id}`)
+                .then((res) => res.json())
+                .then((data) => {
+                    datacenter.filename = data.filename;
+                    aerial_filename = data.filename;
+                })
+                .catch((err) => {
+                    console.error(err);
+                });
+        }
+
+        if (weather == null) {
+            fetch(weatherAPI, {
+                method: "POST",
+                body: JSON.stringify({
+                    id: datacenter.id,
+                    lat: datacenter.lat,
+                    lon: datacenter.lon,
+                }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.message) throw new Error(data.message);
+
+                    weather = data;
+                })
+                .catch((_err) => {
+                    console.error(
+                        `Error fetching weather for ${datacenter.lat} ${datacenter.lon} `,
+                    );
+                });
+        }
+    }
 </script>
 
-<div class="marker-root" class:front={open}>
-    <div
-        class="marker"
-        class:marker-small={zoomed}
-        class:highlighted
-        {onclick}
-        role="button"
-        tabindex="0"
-        aria-label="Datacenter"
-        onkeydown={(e) => e.key === "Enter" && onclick?.()}
-    >
-        {#if open && !zoomed}
-            <div class="title" class:highlighted>
-                <WeatherComponent {weather} />
-                <h1>{datacenter.name}</h1>
-            </div>
+<div bind:this={el}>
+    <div class="marker-root" class:front={open}>
+        <div
+            class="marker"
+            class:marker-small={!markerState.largeMarker}
+            class:highlighted
+            {onclick}
+            role="button"
+            tabindex="0"
+            aria-label="Datacenter"
+            onkeydown={(e) => e.key === "Enter" && onclick?.()}
+        >
+            {#if open && markerState.largeMarker}
+                <div class="title" class:highlighted>
+                    <WeatherComponent {weather} />
+                    <h1>{datacenter.name}</h1>
+                </div>
 
-            <DataPanel {datacenter} />
-        {/if}
-        {#if datacenter.filename && datacenter.precise && !no_preview}
-            <img
-                class="aerial"
-                src="{aerial_url}{datacenter.filename}"
-                alt="Aerial view of {datacenter.name}"
-            />
-        {:else if open && !datacenter.precise && !zoomed && !no_preview}
-            <div class="caption">
-                <span>
-                    Exact location unknown! All we know is that it is in <em>
-                        {datacenter.city}
-                    </em>. Help us find it's exact address!
-                </span>
-            </div>
-        {/if}
+                <DataPanel {datacenter} />
+            {/if}
+            {#if aerial_filename && datacenter.precise && !markerState.noPreview}
+                <img
+                    class="aerial"
+                    src="{aerial_url}{aerial_filename}"
+                    alt="Aerial view of {datacenter.name}"
+                />
+            {:else if open && !datacenter.precise && markerState.largeMarker && !markerState.noPreview}
+                <div class="caption">
+                    <span>
+                        Exact location unknown! All we know is that it is in <em
+                        >
+                            {datacenter.city}
+                        </em>. Help us find it's exact address!
+                    </span>
+                </div>
+            {/if}
+        </div>
     </div>
 </div>
 

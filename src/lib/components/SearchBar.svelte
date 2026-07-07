@@ -2,6 +2,13 @@
     import { resolve } from "$app/paths";
     import { dataState } from "./InfoPanels/data.svelte";
 
+    interface Props {
+        hasFocus: boolean;
+        fitAll: (animate: boolean) => void;
+    }
+
+    let { hasFocus = $bindable(false), fitAll }: Props = $props();
+
     let query: string = $state("");
 
     let message: string | null = $state(null);
@@ -30,6 +37,8 @@
                 dataState.pageUrl = data.pageUrl;
                 dataState.datacenters = data.datacenters;
                 dataState.networkIps = data.networkIps;
+
+                fitAll(true);
             })
             .catch(() => {
                 message =
@@ -86,6 +95,7 @@
         placeholder="Search user submitted URLs"
         {onkeyup}
         {oninput}
+        bind:focused={hasFocus}
     />
     {#if message}
         <div class="error">{message}</div>
@@ -146,5 +156,13 @@
 
     .autocomplete-entry:hover {
         background: #e7e7e7;
+    }
+
+    @media (width < 720px) {
+        .wrapper {
+            top: 6em;
+            width: 80%;
+            max-width: 20em;
+        }
     }
 </style>

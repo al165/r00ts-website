@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { unmount, onDestroy, onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
 
     import Button from "../Button.svelte";
 
@@ -11,21 +11,23 @@
     import mapBuildingsStyle from "./osm_buildings.json";
     import mapStyle from "./osm_surface.json";
 
-    import { MapRaseriser } from "./glyphRenderer.ts";
-    import { addMarker, markerState } from "./marker.svelte.ts";
-    import DebugPanel from "./DebugPanel.svelte";
     import type { Datacenter } from "$lib/types";
+    import DebugPanel from "./DebugPanel.svelte";
+    import { MapRaseriser } from "./glyphRenderer.ts";
     import { glyphSize } from "./glyphState.svelte.ts";
+    import Marker from "./Marker.svelte";
+    import { markerState } from "./marker.svelte.ts";
 
+    import Tooltip from "../InfoPanels/Tooltip.svelte";
+    import { TooltipPositions } from "../InfoPanels/tooltip.svelte.ts";
+
+    import { addSticker, stickerState } from "./sticker.svelte.ts";
+    import StickerPalette from "./StickerPalette.svelte";
     import {
         destroyLocationMarker,
         getUserLocation,
         showLocation,
     } from "./locationMarker.svelte.ts";
-    import StickerPalette from "./StickerPalette.svelte";
-    import { addSticker, stickerState } from "./sticker.svelte.ts";
-    import Tooltip from "../InfoPanels/Tooltip.svelte";
-    import { TooltipPositions } from "../InfoPanels/tooltip.svelte.ts";
 
     let mapContainer: HTMLDivElement;
     let mapBuildingsContainer: HTMLDivElement;
@@ -46,6 +48,7 @@
         showDebug?: boolean;
         children?: any;
         leftPadding: number;
+        fitAll: (animate: boolean) => void;
     }
 
     let {
@@ -54,20 +57,17 @@
         datacenters,
         showDebug = false,
         leftPadding = 100,
+        fitAll = $bindable(),
         children,
     }: Props = $props();
 
-    let datacenterMarkers: Map<
-        number,
-        {
-            marker: maplibregl.Marker;
-            component: any;
-            id: number;
-        }
-    > = new Map();
-
     // svelte-ignore state_referenced_locally
     let zoomState = $state({ value: zoom });
+
+    $effect(() => {
+        markerState.noPreview = zoomState.value < 4;
+        markerState.largeMarker = zoomState.value > 13;
+    });
 
     let rasteriser = $state<MapRaseriser | null>(null);
 
@@ -75,7 +75,7 @@
         mapBuildingsLayer.setStyle(style, { diff: true });
     }
 
-    function fitAll(animate: boolean = false) {
+    fitAll = (animate: boolean = false) => {
         if (!datacenters || !datacenters.length) return;
 
         const bounds = datacenters.reduce((bounds, dc) => {
@@ -94,7 +94,7 @@
             },
             animate,
         });
-    }
+    };
 
     $effect(() => {
         if (markerState.datacenter == null) {
@@ -115,26 +115,26 @@
         }
     });
 
-    $effect(() => {
-        if (markerState.highlighted?.length) {
-            const bounds = new maplibregl.LngLatBounds();
-            datacenterMarkers.forEach((dm) => {
-                if (markerState.highlighted.includes(dm.id))
-                    bounds.extend(dm.marker.getLngLat());
-            });
-
-            map?.fitBounds(bounds, {
-                maxZoom: 16,
-                padding: {
-                    left: leftPadding,
-                    right: 100,
-                    top: 100,
-                    bottom: 100,
-                },
-            });
-        }
-    });
-
+    // $effect(() => {
+    //     if (markerState.highlighted?.length) {
+    //         const bounds = new maplibregl.LngLatBounds();
+    //         datacenterMarkers.forEach((dm) => {
+    //             if (markerState.highlighted.includes(dm.id))
+    //                 bounds.extend(dm.marker.getLngLat());
+    //         });
+    //
+    //         map?.fitBounds(bounds, {
+    //             maxZoom: 16,
+    //             padding: {
+    //                 left: leftPadding,
+    //                 right: 100,
+    //                 top: 100,
+    //                 bottom: 100,
+    //             },
+    //         });
+    //     }
+    // });
+    //
     onMount(() => {
         mapBuildingsLayer = new maplibregl.Map({
             container: mapBuildingsContainer,
@@ -225,38 +225,54 @@
     }
 
     onDestroy(() => {
+        console.log("Map onDestroy");
         destroyLocationMarker();
-        datacenterMarkers.forEach(({ marker, component }) => {
-            marker.remove();
-            unmount(component);
-        });
+        // datacenterMarkers.forEach(({ marker, component }) => {
+        //     marker.remove();
+        //     unmount(component);
+        // });
         map?.remove();
         mapBuildingsLayer?.remove();
     });
 
-    $effect(() => {
-        if (!map) return;
-
-        const incoming = new Set(datacenters?.map((dc) => dc.id));
-
-        for (const [id, dcm] of datacenterMarkers) {
-            if (incoming.has(id)) continue;
-            unmount(dcm.component);
-            dcm.marker.remove();
-            datacenterMarkers.delete(id);
-        }
-
-        if (datacenters && datacenters.length)
-            for (const dc of datacenters) {
-                const { marker, component } = addMarker(map, {
-                    datacenter: dc,
-                    zoomState,
-                });
-                datacenterMarkers.set(dc.id, { marker, component, id: dc.id });
-            }
-
-        fitAll();
-    });
+    // $effect(() => {
+    //     if (!map) return;
+    //
+    //     if (!datacenters) {
+    //         console.log("No datacenters, removing all markers");
+    //         for (const [id, dcm] of datacenterMarkers) {
+    //             dcm.destroy();
+    //             datacenterMarkers.delete(id);
+    //         }
+    //         return;
+    //     }
+    //
+    //     const incoming = new Set(datacenters.map((dc) => dc.id));
+    //
+    //     if (incoming.size < 10) console.log("incoming:", incoming);
+    //
+    //     for (const [id, dcm] of datacenterMarkers) {
+    //         if (incoming.has(id)) {
+    //             console.log(`skipping deleting ${id}`);
+    //             continue;
+    //         }
+    //         dcm.destroy();
+    //         datacenterMarkers.delete(id);
+    //     }
+    //
+    //     if (datacenters && datacenters.length)
+    //         for (const dc of datacenters) {
+    //             if (datacenterMarkers.get(dc.id)) continue;
+    //             datacenterMarkers.set(
+    //                 dc.id,
+    //                 addMarker(map, {
+    //                     datacenter: dc,
+    //                 }),
+    //             );
+    //         }
+    //
+    //     fitAll();
+    // });
 </script>
 
 <div class="map-container">
@@ -268,6 +284,12 @@
 
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div bind:this={mapContainer} class="fill" {ondrop} {ondragover}></div>
+
+    {#if map}
+        {#each datacenters as dc (dc.id)}
+            <Marker {map} datacenter={dc}></Marker>
+        {/each}
+    {/if}
 
     <canvas
         bind:this={glyphOverlayCanvas}
