@@ -1,5 +1,6 @@
 <script lang="ts">
     import { resolve } from "$app/paths";
+    import type { Entry } from "$lib/types";
     import { dataState } from "./InfoPanels/data.svelte";
 
     interface Props {
@@ -37,6 +38,7 @@
                 dataState.pageUrl = data.pageUrl;
                 dataState.datacenters = data.datacenters;
                 dataState.networkIps = data.networkIps;
+                dataState.networksDatacenters = data.networksDatacenters;
 
                 fitAll(true);
             })

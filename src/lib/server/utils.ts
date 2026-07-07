@@ -23,7 +23,7 @@ export function getHostname(url: string) {
 
 export function getNetworkIps(entries: Record<string, Entry>) {
 
-    const result: { [key: number]: Entry[] } = {};
+    const result: Record<number, Entry[]> = {};
 
     if (!entries) return [];
 

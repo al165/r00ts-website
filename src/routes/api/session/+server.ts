@@ -54,10 +54,14 @@ export async function GET({ url }) {
             entries[e.ip] = { ...e, count: 1 };
         });
 
-        const networks = database.getNetworksFromIds(Array.from(network_ids));
+        const networks_list = database.getNetworksFromIds(Array.from(network_ids));
         const networkIps = getNetworkIps(entries);
 
-        return json({ pageUrl: hostname, entries, networks, datacenters, networkIps });
+        const networks = Object.fromEntries(networks_list.map(el => [el.id, el]));
+
+        const networksDatacenters = database.getNetworksDatacenters(Array.from(network_ids), datacenters.map(el => el.id));
+
+        return json({ pageUrl: hostname, entries, networks, datacenters, networkIps, networksDatacenters });
     }
 };
 

@@ -1,10 +1,10 @@
 import type { Network, Entry, Datacenter } from '$lib/types';
 
 let pageUrl: string = $state('');
-let networks: { [key: number]: Network } = $state.raw({});
-let networksDatacenters: { [key: number]: number[] } = $state.raw({});
-let entries: { [key: string]: Entry } = $state.raw({});
-let networkIps: { [key: number]: Entry[] } = $state.raw({});
+let networks: Record<number, Network> = $state.raw({});
+let networksDatacenters: Record<number, number[]> = $state.raw({});
+let entries: Record<string, Entry> = $state.raw({});
+let networkIps: Record<number, Entry[]> = $state.raw({});
 let datacenters: Datacenter[] = $state.raw([]);
 let isSearchResults: boolean = $state(false);
 

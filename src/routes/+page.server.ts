@@ -8,11 +8,11 @@ export async function load({ url }) {
 
     let datacenters: Datacenter[] = [];
     let data: any;
-    let entries: { [key: string]: Entry } = {};
+    let entries: Record<string, Entry> = {};
     let pageUrl: string | undefined;
-    let networks: { [key: number]: Network } = {};
-    let networksDatacenters: { [key: number]: number[] } = {};
-    let networkIps: { [key: number]: Entry[] } = {};
+    let networks: Record<number, Network> = {};
+    let networksDatacenters: Record<number, number[]> = {};
+    let networkIps: Record<number, Entry[]> = {};
 
     if (data64) {
         try {

@@ -461,6 +461,27 @@ export function getDatacentersFromIds(ids: number[]): Datacenter[] {
     return datacenters;
 }
 
+export function getNetworksDatacenters(network_ids: number[], datacenter_ids: number[]) {
+    const result: Record<number, number[]> = {};
+
+    const network_placeholder = network_ids.map(_ => "?").join(',');
+    const datacenter_placeholder = datacenter_ids.map(_ => "?").join(',');
+
+    const rows = db.prepare(`
+        SELECT * FROM NetworksDatacenters 
+        WHERE network_id IN ( ${network_placeholder} ) AND datacenter_id IN ( ${datacenter_placeholder} )
+    `).all(...network_ids, ...datacenter_ids) as { network_id: number, datacenter_id: number }[];
+
+    rows.forEach(el => {
+        if (result[el.network_id] != undefined)
+            result[el.network_id].push(el.datacenter_id);
+        else
+            result[el.network_id] = [el.datacenter_id];
+    });
+
+    return result;
+}
+
 export async function getDatacenterAerialImage(id: number): Promise<string | null> {
     try {
         const { lat, lon, filename } = db.prepare('SELECT lat, lon, filename FROM Datacenters WHERE id = ?').get(id) as Datacenter;
