@@ -29,6 +29,7 @@
                 dataState.networks = data.networks;
                 dataState.pageUrl = data.pageUrl;
                 dataState.datacenters = data.datacenters;
+                dataState.networkIps = data.networkIps;
             })
             .catch(() => {
                 message =

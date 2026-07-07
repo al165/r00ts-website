@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { goto } from "$app/navigation";
     import { resolve } from "$app/paths";
     import { markerState } from "../Map/marker.svelte";
 
@@ -14,7 +13,15 @@
         markerState.datacenter = null;
         markerState.highlighted = [];
         markerState.preview = [];
-        goto(resolve("/"));
+
+        fetch(resolve("/api/datacenter"))
+            .then((res) => res.json())
+            .then((data) => {
+                dataState.datacenters = data.datacenters;
+            })
+            .catch((err) => {
+                console.error(err);
+            });
     }
 </script>
 
