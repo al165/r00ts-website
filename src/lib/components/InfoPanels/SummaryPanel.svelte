@@ -25,8 +25,17 @@
         return list;
     });
 
+    let submitButton: HTMLButtonElement | undefined = $state();
+
+    let showSubmit = $state(true);
+
     const submitSessionAPI = resolve("/api/session");
     function submitSession() {
+        if (submitButton) {
+            submitButton.innerText = "Sending...";
+            submitButton.disabled = true;
+        }
+
         fetch(submitSessionAPI, {
             method: "POST",
             body: JSON.stringify({
@@ -35,12 +44,16 @@
                 datacenter_ids: dataState.datacenters.map((e) => e.id),
             }),
         })
-            .then((res) => res.json())
-            .then((data) => {
-                console.log(data);
-            })
             .catch((err) => {
                 console.error(err);
+            })
+            .finally(() => {
+                if (submitButton) {
+                    submitButton.innerText = "Thanks!";
+                    setTimeout(() => {
+                        showSubmit = false;
+                    }, 2000);
+                }
             });
     }
 </script>
@@ -112,8 +125,10 @@
             </li>
         {/if}
     </ul>
-    {#if !dataState.isSearchResults}
-        <Button onclick={submitSession}>Submit results</Button>
+    {#if !dataState.isSearchResults && showSubmit}
+        <Button bind:element={submitButton} onclick={submitSession}>
+            Submit results
+        </Button>
     {/if}
 </div>
 
