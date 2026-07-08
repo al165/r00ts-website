@@ -2,7 +2,7 @@
     interface Props {
         children: any;
         onclick: (ev: MouseEvent) => void;
-        element: HTMLButtonElement | undefined;
+        element?: HTMLButtonElement | undefined;
         highlight?: boolean;
     }
 

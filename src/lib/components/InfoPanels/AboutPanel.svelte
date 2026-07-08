@@ -8,10 +8,6 @@
 
     let { show = $bindable() }: Props = $props();
 
-    $effect(() => {
-        if (markerState.datacenter && show) show = false;
-    });
-
     function toggle() {
         show = !show;
     }
