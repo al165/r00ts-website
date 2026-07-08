@@ -14,20 +14,6 @@
 
     const { data } = $props();
 
-    onMount(() => {
-        dataState.isSearchResults = false;
-        dataState.networks = data.networks;
-        dataState.networksDatacenters = data.networksDatacenters;
-        dataState.entries = data.entries;
-        dataState.networkIps = data.networkIps;
-        if (data.pageUrl) dataState.pageUrl = data.pageUrl;
-        else dataState.pageUrl = "";
-        dataState.datacenters = data.datacenters;
-
-        firstVisit = !sessionStorage.getItem("hasVisited");
-        sessionStorage.setItem("hasVisited", "true");
-    });
-
     let firstVisit = $state(false);
     let inSession: boolean = $derived(
         Object.keys(dataState.entries).length > 0 ? true : false,
@@ -53,6 +39,20 @@
             showAbout = false;
         }
     });
+
+    onMount(() => {
+        dataState.isSearchResults = false;
+        dataState.networks = data.networks;
+        dataState.networksDatacenters = data.networksDatacenters;
+        dataState.entries = data.entries;
+        dataState.networkIps = data.networkIps;
+        if (data.pageUrl) dataState.pageUrl = data.pageUrl;
+        else dataState.pageUrl = "";
+        dataState.datacenters = data.datacenters;
+
+        firstVisit = !sessionStorage.getItem("hasVisited");
+        sessionStorage.setItem("hasVisited", "true");
+    });
 </script>
 
 <div class="contents">
@@ -61,6 +61,7 @@
         showDebug={data.showDebug}
         leftPadding={data.entries ? 500 : 100}
         bind:fitAll
+        zoomOnLoad={inSession}
     >
         {#if inSession}
             <SessionPanel />

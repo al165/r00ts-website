@@ -1,11 +1,13 @@
 <script lang="ts">
     import { resolve } from "$app/paths";
-    import WeatherComponent from "./WeatherComponent.svelte";
-    import type { Datacenter, Weather } from "$lib/types";
-    import { markerState } from "./marker.svelte";
-    import DataPanel from "../InfoPanels/DataPanel.svelte";
     import { untrack } from "svelte";
+
+    import type { Datacenter, Weather } from "$lib/types";
+
     import maplibregl from "maplibre-gl";
+    import DataPanel from "../InfoPanels/DataPanel.svelte";
+    import WeatherComponent from "./WeatherComponent.svelte";
+    import { markerState, selectDatacenter } from "./marker.svelte";
 
     let {
         map,
@@ -46,7 +48,7 @@
     function onclick(ev?: MouseEvent) {
         ev?.stopPropagation();
 
-        markerState.datacenter = datacenter;
+        selectDatacenter(map, datacenter);
 
         if (datacenter.filename == null && datacenter.precise) {
             fetch(`${aerialAPI}${datacenter.id}`)
@@ -82,9 +84,18 @@
                 });
         }
     }
+
+    function onwheel(e: WheelEvent) {
+        e.preventDefault();
+        queueMicrotask(() => {
+            try {
+                map.getCanvasContainer().dispatchEvent(e);
+            } catch (error) {}
+        });
+    }
 </script>
 
-<div bind:this={el}>
+<div bind:this={el} {onwheel}>
     <div class="marker-root" class:front={open}>
         <div
             class="marker"
@@ -96,7 +107,7 @@
             aria-label="Datacenter"
             onkeydown={(e) => e.key === "Enter" && onclick?.()}
         >
-            {#if open && markerState.largeMarker}
+            {#if open}
                 <div class="title" class:highlighted>
                     <WeatherComponent {weather} />
                     <h1>{datacenter.name}</h1>
@@ -104,13 +115,13 @@
 
                 <DataPanel {datacenter} />
             {/if}
-            {#if aerial_filename && datacenter.precise && !markerState.noPreview}
+            {#if aerial_filename && datacenter.precise}
                 <img
                     class="aerial"
                     src="{aerial_url}{aerial_filename}"
                     alt="Aerial view of {datacenter.name}"
                 />
-            {:else if open && !datacenter.precise && markerState.largeMarker && !markerState.noPreview}
+            {:else if open && !datacenter.precise && markerState.largeMarker}
                 <div class="caption">
                     <span>
                         Exact location unknown! All we know is that it is in <em
