@@ -5,7 +5,6 @@
     import type { Datacenter, Weather } from "$lib/types";
 
     import maplibregl from "maplibre-gl";
-    import DataPanel from "../InfoPanels/DataPanel.svelte";
     import WeatherComponent from "./WeatherComponent.svelte";
     import { markerState, selectDatacenter } from "./marker.svelte";
 
@@ -107,13 +106,11 @@
             aria-label="Datacenter"
             onkeydown={(e) => e.key === "Enter" && onclick?.()}
         >
-            {#if open}
+            {#if open && markerState.largeMarker}
                 <div class="title" class:highlighted>
                     <WeatherComponent {weather} />
                     <h1>{datacenter.name}</h1>
                 </div>
-
-                <DataPanel {datacenter} />
             {/if}
             {#if aerial_filename && datacenter.precise}
                 <img

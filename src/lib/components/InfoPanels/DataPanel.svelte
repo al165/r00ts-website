@@ -3,12 +3,14 @@
     import { dataState } from "./data.svelte";
     import Tooltip from "./Tooltip.svelte";
     import { padIp } from "$lib/ip_utils";
+    import { onDestroy, onMount } from "svelte";
 
     interface Props {
+        map: maplibregl.Map | null;
         datacenter: Datacenter;
     }
 
-    let { datacenter }: Props = $props();
+    let { map, datacenter }: Props = $props();
 
     let networks = $derived.by(() => {
         if (
@@ -100,14 +102,30 @@
     //          |        '------ server overhead roughly doubles TTFB
     //          '--------------- there and back again
     // still useful for estimating continent hops
+
+    let containerEl: HTMLDivElement;
+    let panelEl: HTMLDivElement;
+
+    function positionElement() {
+        if (!datacenter || !map || !containerEl) return;
+
+        const pos = map.project([datacenter.lon, datacenter.lat]);
+        containerEl.style.left = pos.x + "px";
+        containerEl.style.top = pos.y + "px";
+    }
+
+    onMount(() => {
+        map?.on("move", positionElement);
+        positionElement();
+    });
+
+    onDestroy(() => {
+        map?.off("move", positionElement);
+    });
 </script>
 
-<div
-    class="container"
-    class:hidden={datacenter == null}
-    class:animated={datacenter != null}
->
-    <div class="panel">
+<div bind:this={containerEl} class="container">
+    <div bind:this={panelEl} class="panel">
         {#if datacenter.links?.length}
             <h1>
                 <a href={datacenter.links[0]} rel="noopener" target="_blank">
@@ -202,29 +220,20 @@
         color: blue;
     }
 
-    .animated {
-        transition: width 1s cubic-bezier(0.25, 0.1, 0.25, 1);
-    }
-
     .container {
         position: absolute;
-        top: 3em;
-        left: 110%;
         z-index: 11;
         width: 350px;
     }
 
     .panel {
-        position: relative;
+        position: absolute;
+        left: 200px;
+        top: -100px;
         background-color: white;
         padding: 1.5em;
         width: 350px;
-        height: 100%;
         box-sizing: border-box;
-    }
-
-    .hidden {
-        width: 0px;
     }
 
     .indent {
@@ -240,11 +249,9 @@
     }
 
     @media (width < 720px) {
-        .container {
-            top: 100%;
-            width: 100%;
-            margin: 0.8em;
-            left: 0em;
+        .panel {
+            top: 200px;
+            left: -50%;
         }
     }
 </style>

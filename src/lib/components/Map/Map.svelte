@@ -34,6 +34,7 @@
         toGeoJSON,
     } from "./clusterMarkers.ts";
     import Sticker from "./Sticker.svelte";
+    import DataPanel from "../InfoPanels/DataPanel.svelte";
 
     let mapContainer: HTMLDivElement;
     let mapBuildingsContainer: HTMLDivElement;
@@ -281,6 +282,13 @@
         {#each visibleMarkers as dc (dc.id)}
             <Marker map={mapBuildingsLayer} datacenter={dc}></Marker>
         {/each}
+    {/if}
+
+    {#if markerState.datacenter}
+        <DataPanel
+            map={mapBuildingsLayer}
+            datacenter={markerState.datacenter}
+        />
     {/if}
 
     <canvas
