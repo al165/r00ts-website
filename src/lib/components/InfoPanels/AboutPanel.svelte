@@ -1,4 +1,5 @@
 <script lang="ts">
+    import Icon from "@iconify/svelte";
     import Button from "../Button.svelte";
     import MapLegend from "./MapLegend.svelte";
 
@@ -18,7 +19,9 @@
 </div>
 
 <div class="container" class:hidden={!show}>
-    <button class="close-btn" onclick={() => (show = !show)}>X</button>
+    <button class="close-btn" onclick={() => (show = !show)}>
+        <Icon icon="material-symbols:close" height="1.4em" inline={true} />
+    </button>
     <div class="panel">
         <p>
             <b>
@@ -174,7 +177,6 @@
         top: 0;
         left: 0;
         aspect-ratio: 1;
-        width: 3em;
         box-sizing: border-box;
     }
 

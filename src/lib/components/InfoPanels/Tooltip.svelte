@@ -1,4 +1,5 @@
 <script lang="ts">
+    import Icon from "@iconify/svelte";
     import { getTooltipState, TooltipPositions } from "./tooltip.svelte";
 
     interface Props {
@@ -86,7 +87,7 @@
         >
             {@render children?.()}
             <button class="close-btn" onclick={() => tooltipState.close(id)}>
-                X
+                <Icon icon="material-symbols:close" />
             </button>
         </div>
     {/if}
