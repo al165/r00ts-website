@@ -133,7 +133,7 @@
         <p>
             <Icon icon="mdi:github" inline={true} />
             <a
-                href="https://github.com/al165/r00ts-website/tree/main"
+                href="https://github.com/aixdesign/r00ts-website"
                 target="_blank"
             >
                 View on GitHub

@@ -1,8 +1,15 @@
 <script lang="ts">
     import { resolve } from "$app/paths";
+    import { onMount } from "svelte";
     import Button from "../Button.svelte";
     import { dataState } from "./data.svelte";
     import Tooltip from "./Tooltip.svelte";
+
+    interface Props {
+        autoSubmit?: boolean;
+    }
+
+    const { autoSubmit = false }: Props = $props();
 
     let num_ips = $derived(Object.keys(dataState.entries).length);
     let num_datacenters = $derived(dataState.datacenters.length);
@@ -31,6 +38,9 @@
 
     const submitSessionAPI = resolve("/api/session");
     function submitSession() {
+        console.log("submitSession");
+        console.log(dataState.pageUrl);
+
         if (submitButton) {
             submitButton.innerText = "Sending...";
             submitButton.disabled = true;
@@ -56,6 +66,10 @@
                 }
             });
     }
+
+    onMount(() => {
+        if (autoSubmit) submitSession();
+    });
 </script>
 
 <div class="container">
@@ -125,7 +139,7 @@
             </li>
         {/if}
     </ul>
-    {#if !dataState.isSearchResults && showSubmit}
+    {#if !dataState.isSearchResults && showSubmit && !autoSubmit}
         <Button bind:element={submitButton} onclick={submitSession}>
             Submit results
         </Button>

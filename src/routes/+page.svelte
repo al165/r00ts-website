@@ -66,10 +66,10 @@
         {#if inSession}
             <SessionPanel />
             <IpPanel />
-            <SummaryPanel />
+            <SummaryPanel autoSubmit={data.submit} />
         {:else}
             <SearchBar bind:hasFocus={searchFocused} {fitAll}></SearchBar>
-            <a href="https://github.com/al165/r00ts-extension/releases/latest">
+            <a href="https://github.com/aixdesign/r00ts-extension/releases">
                 <button id="r00ts-download-btn">
                     Download the extension (Firefox and Chrome!)
                 </button>

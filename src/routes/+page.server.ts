@@ -5,6 +5,7 @@ import type { Datacenter, Network, Entry } from "$lib/types";
 export async function load({ url }) {
     const showDebug: boolean = url.searchParams.get('debug') ? true : false;
     const data64 = url.searchParams.get('data');
+    let submit = url.searchParams.get('submit') ? true : false;
 
     let datacenters: Datacenter[] = [];
     let data: any;
@@ -34,8 +35,9 @@ export async function load({ url }) {
             console.error(err);
         }
     } else {
+        submit = false;
         datacenters = getAllDatacenters();
     }
 
-    return { datacenters, showDebug, entries, networks, networksDatacenters, pageUrl, networkIps };
+    return { datacenters, showDebug, entries, networks, networksDatacenters, pageUrl, networkIps, submit };
 }
