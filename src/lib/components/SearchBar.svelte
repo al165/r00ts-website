@@ -1,6 +1,5 @@
 <script lang="ts">
     import { resolve } from "$app/paths";
-    import type { Entry } from "$lib/types";
     import { dataState } from "./InfoPanels/data.svelte";
 
     interface Props {
@@ -12,7 +11,8 @@
 
     let query: string = $state("");
 
-    let message: string | null = $state(null);
+    let showHelp = $state(false);
+    let noResults = $state(false);
 
     let autocompleteTimeout: NodeJS.Timeout | null = $state(null);
     let autocompleteEntries: string[] = $state([]);
@@ -21,14 +21,13 @@
 
     function onsubmit() {
         const params = new URLSearchParams({ query });
-        message = "";
+        noResults = false;
 
         fetch(`${sessionUrl}?${params.toString()}`)
             .then((res) => res.json())
             .then((data) => {
                 if (!data.entries) {
-                    message =
-                        "Could not find user submitted results for this query!";
+                    noResults = true;
                     return;
                 }
 
@@ -43,8 +42,7 @@
                 fitAll(true);
             })
             .catch(() => {
-                message =
-                    "Could not find any user submitted results for this query!";
+                noResults = true;
             });
     }
 
@@ -52,7 +50,7 @@
         if (autocompleteTimeout) clearTimeout(autocompleteTimeout);
 
         if (query.length < 2) {
-            message = "";
+            noResults = false;
             autocompleteEntries = [];
             return;
         }
@@ -60,15 +58,20 @@
         autocompleteTimeout = setTimeout(() => {
             // fetch suggestions
             const params = new URLSearchParams({ autocomplete: query });
-            message = "";
             fetch(`${sessionUrl}?${params.toString()}`)
                 .then((res) => res.json())
                 .then((data) => {
+                    if (!data.suggestions?.length) {
+                        autocompleteEntries = [];
+                        noResults = true;
+                        return;
+                    }
                     autocompleteEntries = data.suggestions;
                 })
                 .catch((err) => {
                     console.error(err);
                     autocompleteEntries = [];
+                    noResults = true;
                 });
         }, 500);
     }
@@ -80,7 +83,7 @@
             query = "";
             autocompleteEntries = [];
             if (autocompleteTimeout) clearTimeout(autocompleteTimeout);
-            message = "";
+            noResults = false;
         }
     }
 
@@ -97,10 +100,18 @@
         placeholder="Search user submitted URLs"
         {onkeyup}
         {oninput}
+        onfocusin={() => {
+            if (!autocompleteEntries.length) showHelp = true;
+        }}
+        onfocusout={() => (showHelp = false)}
         bind:focused={hasFocus}
     />
-    {#if message}
-        <div class="error">{message}</div>
+    {#if noResults}
+        <div class="message">
+            No one has traced this website yet, so we can't tell you anything
+            from here. Want to know where it's rooted? Install the extension and
+            trace it yourself!
+        </div>
     {:else if autocompleteEntries.length}
         <div class="autocomplete-list">
             {#each autocompleteEntries as autocomplete}
@@ -111,6 +122,11 @@
                     {autocomplete}
                 </button>
             {/each}
+        </div>
+    {:else if showHelp}
+        <div class="message">
+            Search what others have traced and submitted to the community
+            database.
         </div>
     {/if}
 </div>
@@ -135,7 +151,7 @@
         padding: 0.5em 1em;
     }
 
-    .error,
+    .message,
     .autocomplete-list {
         background-color: white;
         padding: 1em;
