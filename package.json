@@ -21,6 +21,7 @@
         "@sveltejs/vite-plugin-svelte": "^7.0.0",
         "@types/better-sqlite3": "^7.6.13",
         "@types/mime-types": "^3.0.1",
+        "@types/psl": "^1.1.3",
         "dotenv": "^17.4.2",
         "svelte": "^5.55.2",
         "svelte-check": "^4.4.6",
@@ -34,6 +35,7 @@
         "maplibre-gl": "^5.24.0",
         "migration-files": "^0.4.3",
         "mime-types": "^3.0.2",
-        "openmeteo": "^1.2.3"
+        "openmeteo": "^1.2.3",
+        "psl": "^1.15.0"
     }
 }

@@ -1,5 +1,7 @@
-import { ipCompareFn } from "$lib/ip_utils";
+import { ipCompareFn, isIPv4 } from "$lib/ip_utils";
 import type { Entry } from "$lib/types";
+
+import psl from 'psl';
 
 export function getHostname(url: string) {
     try {
@@ -8,9 +10,14 @@ export function getHostname(url: string) {
             url = `http://${url}`;
         const urlObject = new URL(url);
         let hostname = urlObject.hostname;
-        hostname = hostname.replace(/^www./, '');
-        hostname = hostname.split('.').slice(-2).join('.');
+
+        if (!isIPv4(hostname)) {
+            const domain = psl.get(hostname);
+            if (domain)
+                hostname = domain;
+        }
         return hostname;
+
     } catch {
         // Manual cleanup
         // remove whitespace
@@ -21,8 +28,6 @@ export function getHostname(url: string) {
         url = url.replace(/^www./, '');
         // remove path
         url = url.split('/')[0];
-        // remove subdomains
-        url = url.split('.').slice(-2).join('.');
         return url;
     }
 }
