@@ -168,7 +168,7 @@
         {/if}
         {#if unknown_ips}
             <li>
-                No datacenters found for<br />
+                <span class="stat">No datacenters found</span> for<br />
                 {#if unknown_ips == num_ips}
                     {unknown_ips > 1 ? "these IPs" : "this IP"}
                 {:else}
