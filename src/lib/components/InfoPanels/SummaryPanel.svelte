@@ -34,8 +34,16 @@
         return { num, string: list };
     });
 
-    let submitButton: HTMLButtonElement | undefined = $state();
+    let unknown_ips = $derived.by(() => {
+        let count = 0;
+        Object.keys(dataState.networks).forEach((netId) => {
+            if (!dataState.networksDatacenters[parseInt(netId)]) count += 1;
+        });
 
+        return count;
+    });
+
+    let submitButton: HTMLButtonElement | undefined = $state();
     let showSubmit = $state(true);
 
     const submitSessionAPI = resolve("/api/session");
@@ -95,16 +103,18 @@
                 <span class="stat">
                     {num_ips} IP {num_ips > 1 ? "addresses" : "address"}
                 </span>
-                <Tooltip background="yellow">
-                    <h2>Why so many IP addresses?</h2>
-                    <p>It turns out a webpage isn't rooted in one place.</p>
-                    <p>
-                        It's made up of many elements — text, images, fonts,
-                        dynamic bits like this map — and each element can come
-                        from a different service.
-                    </p>
-                    <p>Each one of those can have its own IP address.</p>
-                </Tooltip>
+                {#if num_ips > 1}
+                    <Tooltip background="yellow">
+                        <h2>Why so many IP addresses?</h2>
+                        <p>It turns out a webpage isn't rooted in one place.</p>
+                        <p>
+                            It's made up of many elements — text, images, fonts,
+                            dynamic bits like this map — and each element can
+                            come from a different service.
+                        </p>
+                        <p>Each one of those can have its own IP address.</p>
+                    </Tooltip>
+                {/if}
             </li>
         {/if}
         {#if num_datacenters > 0}
@@ -152,6 +162,30 @@
                         {city_data.num > 1
                             ? `these ${city_data.num} cities`
                             : `this city`}
+                    </p>
+                </Tooltip>
+            </li>
+        {/if}
+        {#if unknown_ips}
+            <li>
+                No datacenters found for<br />
+                {#if unknown_ips == num_ips}
+                    {unknown_ips > 1 ? "these IPs" : "this IP"}
+                {:else}
+                    {unknown_ips > 1 ? "some IPs" : "one IP"}
+                {/if}
+                <Tooltip>
+                    <p>
+                        Unfortunately, our sources do not (yet) have any data on
+                        {unknown_ips > 1
+                            ? `${unknown_ips} IP addresses`
+                            : "one IP address"}
+                    </p>
+                    <p>
+                        This may be because the IP address is new or it has only
+                        recently been assigned, or because the owners have yet
+                        to register their ASN network on
+                        <a href="https://peeringdb.com">PeeringDB</a>.
                     </p>
                 </Tooltip>
             </li>

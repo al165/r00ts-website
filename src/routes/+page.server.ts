@@ -26,7 +26,8 @@ export async function load({ url }) {
             datacenters = getDatacentersFromIds(data['facility_ids']);
 
             const network_list = getNetworksFromIds(data['network_ids']);
-            network_list.map(net => networks[net.id] = net);
+            network_list.forEach(net => networks[net.id] = net);
+
             networksDatacenters = data['network_datacenters'];
             entries = data['entries'];
             pageUrl = data['pageUrl'];
