@@ -3,7 +3,7 @@
     import { GLYPH_FUNCTIONS } from "../Map/glyphRenderer";
     import { glyphState } from "../Map/glyphState.svelte";
 
-    const canvases: { [key: string]: HTMLCanvasElement } = {};
+    const canvases: { [key: string]: HTMLCanvasElement } = $state({});
     const size = 12;
 
     onMount(() => {

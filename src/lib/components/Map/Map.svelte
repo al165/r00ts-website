@@ -129,6 +129,10 @@
             interactive: false,
             attributionControl: false,
             maxCanvasSize: [8192, 8192],
+            // Required so createImageBitmap() in the rasteriser can read this
+            // canvas's WebGL content asynchronously without racing the browser
+            // clearing the drawing buffer between frames.
+            canvasContextAttributes: { preserveDrawingBuffer: true },
         });
 
         mapBuildingsLayer = new maplibregl.Map({
@@ -167,21 +171,25 @@
         mapBuildingsLayer.on("zoom", () => {
             if (!mapBuildingsLayer) return;
 
-            let newZoom = mapBuildingsLayer.getZoom();
+            const newZoom = mapBuildingsLayer.getZoom();
+            const wasLarge = zoomState.value > 13;
+            const large = newZoom > 13;
 
-            if (markerState.datacenter && newZoom <= 13 && zoomState.value > 13)
+            if (markerState.datacenter && !large && wasLarge)
                 markerState.datacenter = null;
 
-            markerState.largeMarker = zoomState.value > 13;
+            if (large !== markerState.largeMarker)
+                markerState.largeMarker = large;
 
-            const visible =
-                zoomState.value >= CLUSTER_MAX_ZOOM ? "none" : "visible";
+            const visible = newZoom >= CLUSTER_MAX_ZOOM ? "none" : "visible";
             const visible_cluster_labels =
-                zoomState.value >= CLUSTER_MAX_ZOOM || zoomState.value < 3
-                    ? "none"
-                    : "visible";
+                newZoom >= CLUSTER_MAX_ZOOM || newZoom < 3 ? "none" : "visible";
 
-            if (mapBuildingsLayer.getLayer("clusters")) {
+            if (
+                mapBuildingsLayer.getLayer("clusters") &&
+                mapBuildingsLayer.getLayoutProperty("clusters", "visibility") !==
+                    visible
+            ) {
                 mapBuildingsLayer.setLayoutProperty(
                     "clusters",
                     "visibility",
@@ -199,7 +207,7 @@
                 );
             }
 
-            zoomState.value = newZoom;
+            if (newZoom !== zoomState.value) zoomState.value = newZoom;
         });
 
         mapBuildingsLayer.on("load", () => {
@@ -263,8 +271,12 @@
         mapBuildingsLayer?.remove();
     });
 
+    // Kept as its own boolean derived so `visibleMarkers` only recomputes when
+    // markers actually toggle on/off, not on every fractional zoom tick.
+    let showMarkers = $derived(zoomState.value >= CLUSTER_MAX_ZOOM);
+
     let visibleMarkers = $derived(
-        zoomState.value >= CLUSTER_MAX_ZOOM && datacenters
+        showMarkers && datacenters
             ? datacenters.filter((dc) => bounds.contains([dc.lon, dc.lat]))
             : [],
     );

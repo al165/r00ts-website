@@ -13,53 +13,41 @@ export function colourDistSquared(a: Colour, b: Colour) {
 
 
 export function syncMaps(...maps: Map[]) {
-    // Create all the movement functions, because if they're created every time
-    // they wouldn't be the same and couldn't be removed.
-    let fns: Parameters<Map["on"]>[1][] = [];
-    maps.forEach((map, index) => {
-        // When one map moves, we turn off the movement listeners
-        // on all the maps, move it, then turn the listeners on again
-        fns[index] = () => {
-            off();
+    // Guard against re-entrancy when one map's jumpTo() triggers its own
+    // "move" event, instead of removing/re-adding listeners on every frame.
+    let syncing = false;
 
-            const center = map.getCenter();
-            const zoom = map.getZoom();
-            const bearing = map.getBearing();
-            const pitch = map.getPitch();
-            const padding = map.getPadding();
+    const fns: Parameters<Map["on"]>[1][] = maps.map((map, index) => () => {
+        if (syncing) return;
+        syncing = true;
 
-            const clones = maps.filter((_o, i) => i !== index);
-            clones.forEach((clone) => {
-                clone.jumpTo({
-                    center: center,
-                    zoom: zoom,
-                    bearing: bearing,
-                    pitch: pitch,
-                    padding: padding
-                });
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        const bearing = map.getBearing();
+        const pitch = map.getPitch();
+        const padding = map.getPadding();
+
+        maps.forEach((clone, i) => {
+            if (i === index) return;
+            clone.jumpTo({
+                center: center,
+                zoom: zoom,
+                bearing: bearing,
+                pitch: pitch,
+                padding: padding
             });
+        });
 
-            on();
-        };
+        syncing = false;
     });
 
-    const on = () => {
-        maps.forEach((map, index) => {
-            map.on("move", fns[index]);
-        });
-    };
+    maps.forEach((map, index) => {
+        map.on("move", fns[index]);
+    });
 
-    const off = () => {
+    return () => {
         maps.forEach((map, index) => {
             map.off("move", fns[index]);
         });
-    };
-
-    on();
-
-    return () => {
-        off();
-        fns = [];
-        maps = [];
     };
 }

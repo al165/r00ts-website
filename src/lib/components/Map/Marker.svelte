@@ -104,18 +104,9 @@
 
         selectDatacenter(map, datacenter);
     }
-
-    function onwheel(e: WheelEvent) {
-        e.preventDefault();
-        queueMicrotask(() => {
-            try {
-                map.getCanvasContainer().dispatchEvent(e);
-            } catch (error) {}
-        });
-    }
 </script>
 
-<div bind:this={el} class:front={open} {onwheel}>
+<div bind:this={el} class:front={open}>
     <div class="marker-root">
         <div
             class="marker"

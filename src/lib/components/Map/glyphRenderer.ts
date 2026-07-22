@@ -283,6 +283,15 @@ export class MapRaseriser {
 
     public rasterPalette: RasteriserPalette;
 
+    private capturingFrame = false;
+    private useAsyncCapture = false;
+    // Synchronous WebGL-canvas readback is fast in some browsers (Firefox) and
+    // very slow in others (Chrome, 15-70ms/call). Rather than hardcode a
+    // browser check, measure it: only fall back to the async path (which adds
+    // a frame or two of lag between the raster overlay and the live map) once
+    // the sync path proves too slow on this machine/browser.
+    private static readonly SYNC_SLOW_THRESHOLD_MS = 100;
+
     constructor(
         glyphOverlayCanvas: HTMLCanvasElement,
         mapCanvas: HTMLCanvasElement,
@@ -310,9 +319,9 @@ export class MapRaseriser {
             this.glyphOverlayCtx.imageSmoothingEnabled = false;
 
         if (this.offscreenCanvas instanceof OffscreenCanvas)
-            this.offscreenCtx = this.offscreenCanvas.getContext('2d');
+            this.offscreenCtx = this.offscreenCanvas.getContext('2d', { alpha: false, willReadFrequently: true });
         else
-            this.offscreenCtx = this.offscreenCanvas.getContext('2d');
+            this.offscreenCtx = this.offscreenCanvas.getContext('2d', { alpha: false, willReadFrequently: true });
 
         if (this.offscreenCtx)
             this.offscreenCtx.imageSmoothingEnabled = false;
@@ -360,10 +369,54 @@ export class MapRaseriser {
         this.renderGlyphs();
     }
 
+    // Called from the map's "render" event, which can fire once per repaint.
     renderGlyphs() {
         if (this.offscreenCtx == null || this.glyphOverlayCtx == null) return;
 
-        this.offscreenCtx.drawImage(this.mapCanvas, 0, 0, this.cols, this.rows);
+        if (!this.useAsyncCapture) {
+            const start = performance.now();
+            this.offscreenCtx.drawImage(this.mapCanvas, 0, 0, this.cols, this.rows);
+            this.readPixels();
+            const readbackMs = performance.now() - start;
+
+            this.drawGlyphsFromPixels();
+
+            // Reading pixels back from a live WebGL canvas can force the browser
+            // to synchronously flush and wait on the GPU pipeline (measured
+            // 15-70ms/call in Chrome, but near-instant in Firefox). Only switch
+            // to the async path — which trades a frame or two of lag between
+            // the raster overlay and the live map for not blocking the main
+            // thread — once we've actually observed this browser being slow.
+            // Timed around the readback alone so a busy glyph-redraw frame
+            // (many changed cells during a pan) can't itself trip the switch.
+            if (readbackMs > MapRaseriser.SYNC_SLOW_THRESHOLD_MS) {
+                this.useAsyncCapture = true;
+            }
+            return;
+        }
+
+        // No fixed-rate throttle here: `capturingFrame` already caps concurrency
+        // to one in-flight capture, so this naturally runs as fast as captures
+        // resolve.
+        if (this.capturingFrame) return;
+        this.capturingFrame = true;
+
+        createImageBitmap(this.mapCanvas, {
+            resizeWidth: this.cols,
+            resizeHeight: this.rows,
+            resizeQuality: "pixelated",
+        }).then((bitmap) => {
+            if (this.offscreenCtx) this.offscreenCtx.drawImage(bitmap, 0, 0);
+            bitmap.close();
+            this.readPixels();
+            this.drawGlyphsFromPixels();
+        }).catch(() => { }).finally(() => {
+            this.capturingFrame = false;
+        });
+    }
+
+    private readPixels() {
+        if (this.offscreenCtx == null) return;
 
         if (!this.imageData) {
             this.imageData = this.offscreenCtx.getImageData(0, 0, this.cols, this.rows);
@@ -372,8 +425,10 @@ export class MapRaseriser {
             const fresh = this.offscreenCtx.getImageData(0, 0, this.cols, this.rows);
             this.imageData.data.set(fresh.data);
         }
+    }
 
-        if (!this.pixels)
+    private drawGlyphsFromPixels() {
+        if (this.glyphOverlayCtx == null || !this.pixels)
             return;
 
         for (let i = 0, len = this.pixels.length; i < len; i++) {
